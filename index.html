@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>명당연구소 — 실거래가 기반 AI 투자 분석</title>
+<title>명당연구소 — 주소 하나로 부동산의 모든 것을 분석</title>
+<meta name="description" content="아파트·토지·상권의 적정 가격, 리스크, 예상 수익률을 국토교통부 실거래가와 AI로 3초 만에 분석합니다. 무료 분석 리포트 제공.">
+<meta property="og:title" content="명당연구소 — AI 부동산 투자 분석">
+<meta property="og:description" content="주소 하나로 적정 가격·리스크·수익률까지. 실거래가 기반 AI 분석 리포트를 무료로 받아보세요.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#2563EB">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%232563EB%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 text-anchor=%22middle%22>🏢</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 :root{--blue:#2563EB;--deep:#1E3A8A;--light:#EFF6FF;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--text:#334155;--bg:#F8FAFC;--border:#E2E8F0}
@@ -197,6 +203,16 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
 .src-box p{font-size:12px;color:#94A3B8;line-height:1.7}
 .src-chip{display:inline-block;border:1px solid var(--border);border-radius:7px;padding:4px 11px;font-size:11.5px;color:#475569;margin:6px 6px 0 0;background:var(--bg)}
 @media print{.concl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.ai-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* ===== 사전등록 모달 ===== */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal{background:#fff;border-radius:18px;padding:30px;max-width:430px;width:100%;box-shadow:0 30px 80px rgba(2,8,40,.4);max-height:82vh;overflow:auto}
+.modal h3{font-size:19px;color:#0F172A;margin-bottom:8px}
+.modal p{font-size:13.5px;color:#64748B;margin-bottom:16px;line-height:1.65}
+.modal input{margin-bottom:10px}
+.modal .btn{width:100%;margin-top:4px}
+.modal .legal-txt{font-size:12.5px;color:#475569;line-height:1.75}
+.modal .legal-txt b{display:block;margin:12px 0 4px;color:#0F172A}
+footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 /* ===== 분석 전용 페이지 (/analyze, /share) — 랜딩 요소 숨김 ===== */
 .tool-page .mock-wrap,.tool-page .band,.tool-page .sec-mkt,.tool-page .cta-final,.tool-page footer,
 .tool-page .eyebrow,.tool-page .hero h1,.tool-page .hero .sub{display:none!important}
@@ -402,6 +418,12 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
       <p id="aComment"></p>
     </div>
 
+    <div class="card mt no-print" style="text-align:center;border:2px solid var(--blue)">
+      <b style="font-size:16px;color:#0F172A">이 단지, 계속 지켜보고 싶으신가요?</b>
+      <p class="hint" style="margin:8px 0 14px">베타 사전등록 시 무제한 분석 · 정식 출시 우선 안내 · 얼리버드 할인을 드립니다.</p>
+      <button class="btn btn-p" onclick="openLead('Pro','report')">🔔 무료 사전등록</button>
+    </div>
+
     <div class="src-box">
       <div class="s-t">🔎 데이터 신뢰도 및 출처</div>
       <p>본 리포트의 시세 데이터는 국토교통부 실거래가 공개시스템의 신고 자료를 기반으로 하며, 분석 기준일 시점의 공개 데이터를 사용합니다. 투자 점수·등급은 상대가치(Comps)·수익가치(Income)·기술적 지표를 결합한 정량 모형의 산출값으로, 실제 투자 의사결정에 직접 활용하기보다는 대상의 특성과 상대적 위치를 이해하는 참고 자료로 활용되어야 합니다.</p>
@@ -521,13 +543,13 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
   <div class="g3" style="align-items:stretch">
     <div class="price"><div class="nm">Basic</div><div class="amt">₩19,900<small>/월</small></div><div class="de">개인 투자자를 위한 기본 분석</div>
       <ul><li>아파트 상세 리포트</li><li>투자 점수·등급</li><li>PDF 다운로드</li><li>이메일 지원</li></ul>
-      <button class="btn btn-g">Basic 시작하기</button></div>
+      <button class="btn btn-g" onclick="openLead('Basic','pricing')">Basic 사전등록</button></div>
     <div class="price pop"><span class="pop-badge">인기</span><div class="nm">Pro</div><div class="amt">₩49,000<small>/월</small></div><div class="de">전문 투자자를 위한 심층 분석</div>
       <ul><li>아파트 + 토지 상세 분석</li><li>AI 애널리스트 코멘트</li><li>시나리오 IRR·민감도</li><li>우선 지원</li></ul>
-      <button class="btn btn-p">Pro 시작하기</button></div>
+      <button class="btn btn-p" onclick="openLead('Pro','pricing')">Pro 사전등록</button></div>
     <div class="price"><div class="nm">Expert</div><div class="amt">₩149,000<small>/월</small></div><div class="de">중개사·법인 맞춤형</div>
       <ul><li>전문가용 PDF·고객 공유</li><li>B2B 기능</li><li>무제한 리포트</li><li>전담 지원</li></ul>
-      <button class="btn btn-g">문의하기</button></div>
+      <button class="btn btn-g" onclick="openLead('Expert','pricing')">Expert 문의·사전등록</button></div>
   </div>
 </section>
 
@@ -552,9 +574,42 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
 </section>
 
 <footer class="no-print">
-  🏢 명당연구소 — AI 부동산 투자 분석 플랫폼 (프로토타입)<br>
-  본 서비스의 분석 결과는 참고용이며 투자 권유가 아닙니다. 투자 판단의 책임은 투자자 본인에게 있습니다.
+  🏢 명당연구소 — AI 부동산 투자 분석 플랫폼 (베타)<br>
+  본 서비스의 분석 결과는 참고용이며 투자 권유가 아닙니다. 투자 판단의 책임은 투자자 본인에게 있습니다.<br>
+  <a onclick="openLegal()">이용약관 · 개인정보처리방침</a>
 </footer>
+
+<!-- 사전등록 모달 -->
+<div id="leadModal" class="modal-bg">
+  <div class="modal">
+    <h3 id="leadTitle">🔔 베타 사전등록</h3>
+    <p id="leadDesc">이메일만 남기면 <b>베타 기간 무제한 분석</b>이 바로 열리고, 정식 출시 시 우선 안내와 할인 혜택을 드립니다.</p>
+    <input id="leadName" placeholder="이름 또는 닉네임 (선택)">
+    <input id="leadEmail" type="email" placeholder="이메일 주소 *">
+    <div class="hint" id="leadMsg" style="min-height:18px"></div>
+    <button class="btn btn-p" onclick="submitLead()">무료로 등록하기</button>
+    <button class="btn btn-g" onclick="closeModal('leadModal')">다음에 할게요</button>
+    <p class="hint" style="margin-top:10px;margin-bottom:0">등록 시 개인정보처리방침에 동의하는 것으로 간주합니다. 이메일은 서비스 안내 외 용도로 사용하지 않습니다.</p>
+  </div>
+</div>
+
+<!-- 법적 고지 모달 -->
+<div id="legalModal" class="modal-bg">
+  <div class="modal">
+    <h3>📜 이용약관 · 개인정보처리방침 (요약)</h3>
+    <div class="legal-txt">
+      <b>서비스 성격</b>
+      본 서비스는 공공데이터(국토교통부 실거래가 등)를 기반으로 한 참고용 분석 도구이며, 투자자문업·투자권유에 해당하지 않습니다. 분석 결과의 정확성·완전성을 보장하지 않으며, 투자 판단과 그 결과의 책임은 전적으로 이용자 본인에게 있습니다.
+      <b>데이터 출처</b>
+      국토교통부 실거래가 공개시스템, K-apt 공동주택관리정보시스템, OpenStreetMap 등 공개 데이터를 사용합니다.
+      <b>개인정보 수집</b>
+      사전등록 시 이메일·이름(선택)을 수집하며, 서비스 출시 안내 목적으로만 사용합니다. 삭제 요청 시 즉시 파기합니다.
+      <b>문의</b>
+      play@muzig.ai
+    </div>
+    <button class="btn btn-g" style="margin-top:16px" onclick="closeModal('legalModal')">닫기</button>
+  </div>
+</div>
 
 <script>
 /* ================= 법정동코드 (시군구 5자리) ================= */
@@ -761,6 +816,46 @@ async function initShare(){
   }catch{setStatus("err","공유 리포트를 찾을 수 없습니다.");}
 }
 
+/* ================= 수익화: 사전등록 · 지표 · 무료 한도 ================= */
+function track(ev){try{fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ev})});}catch{}}
+let leadCtx={plan:"",source:""};
+function openLead(plan,source){
+  leadCtx={plan:plan||"",source:source||""};
+  $("leadTitle").textContent=source==="limit"?"🔒 이번 달 무료 분석 5회를 모두 사용했어요":"🔔 베타 사전등록";
+  $("leadDesc").innerHTML=source==="limit"
+    ?"이메일만 남기면 <b>베타 기간 무제한 분석</b>이 즉시 열립니다. 정식 출시 시 우선 안내와 얼리버드 할인도 드려요."
+    :`이메일만 남기면 <b>베타 기간 무제한 분석</b>이 바로 열리고, 정식 출시 시 ${plan?`<b>${plan}</b> 플랜 `:""}우선 안내와 할인 혜택을 드립니다.`;
+  $("leadMsg").textContent="";
+  $("leadModal").style.display="flex";
+  track("leadopen");
+}
+function closeModal(id){$(id).style.display="none";}
+function openLegal(){$("legalModal").style.display="flex";}
+async function submitLead(){
+  const email=$("leadEmail").value.trim(),name=$("leadName").value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){$("leadMsg").textContent="⚠️ 올바른 이메일을 입력해주세요.";return;}
+  try{
+    const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,name,plan:leadCtx.plan,source:leadCtx.source})});
+    const j=await r.json();
+    if(j.error){$("leadMsg").textContent="⚠️ "+j.error;return;}
+    localStorage.setItem("mdPro","1");
+    $("leadMsg").textContent="";
+    $("leadTitle").textContent="🎉 등록 완료!";
+    $("leadDesc").innerHTML="<b>베타 무제한 분석이 열렸습니다.</b> 정식 출시 소식을 가장 먼저 알려드릴게요.";
+    setTimeout(()=>closeModal("leadModal"),1800);
+  }catch{$("leadMsg").textContent="⚠️ 등록에 실패했습니다. 잠시 후 다시 시도해주세요.";}
+}
+/* 무료 사용 한도: 월 5회 (사전등록 시 무제한, 공유 리포트 열람은 무제한) */
+function quotaKey(){const d=new Date();return`mdUse-${d.getFullYear()}-${d.getMonth()+1}`;}
+function checkQuota(){
+  if(localStorage.getItem("mdPro"))return true;
+  if(location.pathname.startsWith("/share/"))return true;
+  if((+localStorage.getItem(quotaKey())||0)>=5){openLead("","limit");return false;}
+  return true;
+}
+function useQuota(){const k=quotaKey();localStorage.setItem(k,(+localStorage.getItem(k)||0)+1);}
+
 /* ================= 라우팅: 메인(랜딩) ↔ /analyze(분석 전용) ================= */
 function initRoute(){
   const p=location.pathname;
@@ -780,7 +875,7 @@ function initRoute(){
 }
 
 /* ================= 데이터 로딩 ================= */
-function initRegion(){initRoute();checkServer();initShare();}
+function initRegion(){initRoute();checkServer();initShare();track(state.isTool?"toolview":"pageview");}
 async function checkServer(){
   const b=$("keyBadge");
   try{
@@ -1154,6 +1249,8 @@ function renderPeers(c,band){
 function analyzeApt(){
   if(!state.complex||!state.areaBand)return alert("단지와 면적 타입을 선택해주세요.");
   const ask=+$("askPrice").value;if(!ask)return alert("매수 예정가(호가)를 입력해주세요.");
+  if(!checkQuota())return;
+  useQuota();track("analyze");
   const rf=(+$("rf").value||3)/100,conv=(+$("convRate").value||6)/100;
   const c=state.complex,band=state.areaBand;
   const inBand=t=>Math.abs(t.area-band)<=3;
@@ -1347,6 +1444,8 @@ function buildLandFilters(){
 function analyzeLand(){
   const area=+$("landArea").value,ask=+$("landAsk").value;
   if(!area||!ask)return alert("대상 면적과 호가를 입력해주세요.");
+  if(!checkQuota())return;
+  useQuota();track("analyze");
   const rf=(+$("rfLand").value||3)/100;
   const dong=$("landDong").value,jimok=$("landJimok").value,use=$("landUse").value;
   const askUnit=ask/area; // 만원/㎡

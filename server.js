@@ -51,6 +51,20 @@ const SHARES_FILE = path.join(__dirname, "shares.json");
 let SHARES = {};
 try { SHARES = JSON.parse(fs.readFileSync(SHARES_FILE, "utf-8")); } catch {}
 
+/* 사전등록(리드) & 지표 저장소 — 주의: 무료 호스팅에서는 재배포 시 초기화되므로 주기적으로 /api/leads 로 백업하세요 */
+const LEADS_FILE = path.join(__dirname, "leads.json");
+let LEADS = [];
+try { LEADS = JSON.parse(fs.readFileSync(LEADS_FILE, "utf-8")); } catch {}
+const STATS_FILE = path.join(__dirname, "stats.json");
+let STATS = {};
+try { STATS = JSON.parse(fs.readFileSync(STATS_FILE, "utf-8")); } catch {}
+function bump(ev) {
+  const d = new Date().toISOString().slice(0, 10);
+  STATS[d] = STATS[d] || {};
+  STATS[d][ev] = (STATS[d][ev] || 0) + 1;
+  try { fs.writeFileSync(STATS_FILE, JSON.stringify(STATS, null, 1)); } catch {}
+}
+
 /* ---------- 법정동코드 (시군구) — 아파트 색인·지역 해석용 ---------- */
 const LAWD = {
 "서울특별시":{"종로구":"11110","중구":"11140","용산구":"11170","성동구":"11200","광진구":"11215","동대문구":"11230","중랑구":"11260","성북구":"11290","강북구":"11305","도봉구":"11320","노원구":"11350","은평구":"11380","서대문구":"11410","마포구":"11440","양천구":"11470","강서구":"11500","구로구":"11530","금천구":"11545","영등포구":"11560","동작구":"11590","관악구":"11620","서초구":"11650","강남구":"11680","송파구":"11710","강동구":"11740"},
@@ -305,6 +319,38 @@ const server = http.createServer(async (req, res) => {
     if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname === "/analyze" || u.pathname.startsWith("/share/")) {
       const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
       return send(200, html, "text/html");
+    }
+
+    /* 사전등록(리드) 수집 */
+    if (u.pathname === "/api/lead" && req.method === "POST") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      const { email, name, plan, source } = JSON.parse(body || "{}");
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return send(400, { error: "올바른 이메일을 입력해주세요." });
+      LEADS.push({ email: String(email).slice(0, 120), name: String(name || "").slice(0, 60),
+        plan: String(plan || "").slice(0, 30), source: String(source || "").slice(0, 30), at: new Date().toISOString() });
+      try { fs.writeFileSync(LEADS_FILE, JSON.stringify(LEADS, null, 1)); } catch {}
+      bump("lead");
+      console.log(`  🔔 사전등록: ${email} (${plan || "-"})`);
+      return send(200, { ok: true });
+    }
+    /* 관리자: 리드 목록 (본인 인증키 필요) */
+    if (u.pathname === "/api/leads") {
+      if (!SERVICE_KEY || u.searchParams.get("key") !== SERVICE_KEY) return send(403, { error: "unauthorized" });
+      return send(200, { count: LEADS.length, leads: LEADS });
+    }
+    /* 지표 트래킹 */
+    if (u.pathname === "/api/track" && req.method === "POST") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      let ev = "etc";
+      try { ev = (JSON.parse(body || "{}").ev || "etc").replace(/[^a-z_]/g, "").slice(0, 24) || "etc"; } catch {}
+      bump(ev);
+      return send(200, { ok: true });
+    }
+    if (u.pathname === "/api/stats") {
+      if (!SERVICE_KEY || u.searchParams.get("key") !== SERVICE_KEY) return send(403, { error: "unauthorized" });
+      return send(200, STATS);
     }
 
     /* 리포트 공유 링크: 분석 조건을 저장하고 /share/{id}로 재현 */
