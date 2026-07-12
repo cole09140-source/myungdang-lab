@@ -197,6 +197,12 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
 .src-box p{font-size:12px;color:#94A3B8;line-height:1.7}
 .src-chip{display:inline-block;border:1px solid var(--border);border-radius:7px;padding:4px 11px;font-size:11.5px;color:#475569;margin:6px 6px 0 0;background:var(--bg)}
 @media print{.concl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.ai-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+/* ===== 분석 전용 페이지 (/analyze, /share) — 랜딩 요소 숨김 ===== */
+.tool-page .mock-wrap,.tool-page .band,.tool-page .sec-mkt,.tool-page .cta-final,.tool-page footer,
+.tool-page .eyebrow,.tool-page .hero h1,.tool-page .hero .sub{display:none!important}
+.tool-page .hero{padding:26px 24px 4px}
+.tool-page .hero-grid{grid-template-columns:1fr}
+.tool-page .hero-search{margin-top:0}
 .adv-toggle{font-size:12.5px;color:var(--blue);cursor:pointer;font-weight:700;margin-top:10px;display:inline-block}
 #advRow{display:none}
 /* 헤더 탭 (Land AI 스타일 세그먼트) */
@@ -223,7 +229,7 @@ footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size
 </head>
 <body>
 <header><div class="hin">
-  <div class="logo" style="display:flex;align-items:center;gap:9px"><span class="logo-badge">🏢</span>명당<span>연구소</span><span class="beta">Beta</span></div>
+  <a class="logo" href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none"><span class="logo-badge">🏢</span>명당<span>연구소</span><span class="beta">Beta</span></a>
   <div class="htabs no-print">
     <div class="htab on" id="tabApt" onclick="setMode('apt')">🏢 아파트 분석</div>
     <div class="htab" id="tabLand" onclick="setMode('land')">🌍 토지 분석</div>
@@ -755,8 +761,26 @@ async function initShare(){
   }catch{setStatus("err","공유 리포트를 찾을 수 없습니다.");}
 }
 
+/* ================= 라우팅: 메인(랜딩) ↔ /analyze(분석 전용) ================= */
+function initRoute(){
+  const p=location.pathname;
+  state.isTool=p.startsWith("/analyze")||p.startsWith("/share/");
+  if(!state.isTool)return;
+  document.body.classList.add("tool-page");
+  if(!p.startsWith("/analyze"))return; // /share 는 initShare가 처리
+  const s=new URLSearchParams(location.search);
+  if(s.get("mode"))setMode(s.get("mode"));
+  if(s.get("months"))$("months").value=s.get("months");
+  if(s.get("sample")){sampleReport(s.get("sample"));return;}
+  if(s.get("lawd"))$("lawdManual").value=s.get("lawd");
+  if(s.get("code"))state.selRegion={code:s.get("code"),full:s.get("region")||""};
+  state.aptQuery=s.get("aq")||"";
+  if(s.get("q"))$("bigAddr").value=s.get("q");
+  if(s.get("q")||s.get("lawd")||s.get("code"))loadData();
+}
+
 /* ================= 데이터 로딩 ================= */
-function initRegion(){checkServer();initShare();}
+function initRegion(){initRoute();checkServer();initShare();}
 async function checkServer(){
   const b=$("keyBadge");
   try{
@@ -768,6 +792,17 @@ async function checkServer(){
 }
 async function loadData(){
   $("addrSuggest").style.display="none";
+  // 랜딩 페이지에서는 분석 전용 페이지(/analyze)로 이동
+  if(!state.isTool){
+    const s=new URLSearchParams();
+    s.set("mode",state.mode);s.set("months",$("months").value);
+    const man=$("lawdManual").value.trim();if(man)s.set("lawd",man);
+    const q=$("bigAddr").value.trim();if(q)s.set("q",q);
+    if(state.selRegion){s.set("code",state.selRegion.code);s.set("region",state.selRegion.full);s.set("aq",state.aptQuery||"");}
+    if(!q&&!man)return setStatus("err","주소나 아파트명을 입력해주세요.");
+    location.href="/analyze?"+s.toString();
+    return;
+  }
   // 1) 법정동코드 직접 입력 우선
   const man=$("lawdManual").value.trim();
   let lawd=null;
@@ -907,6 +942,7 @@ function loadDemo(){
 
 /* ================= 샘플 리포트 (실거래 데이터 · 고정 대상) ================= */
 async function sampleReport(kind){
+  if(!state.isTool){location.href="/analyze?sample="+kind;return;} // 랜딩 → 분석 페이지
   setMode(kind);
   let keyOk=false;
   try{keyOk=(await(await fetch("/api/status")).json()).keyConfigured;}catch{}

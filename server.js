@@ -302,7 +302,7 @@ const server = http.createServer(async (req, res) => {
   };
 
   try {
-    if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname.startsWith("/share/")) {
+    if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname === "/analyze" || u.pathname.startsWith("/share/")) {
       const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
       return send(200, html, "text/html");
     }
