@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: myungdang-lab
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: SERVICE_KEY
+        sync: false

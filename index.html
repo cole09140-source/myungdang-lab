@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명당연구소 — 실거래가 기반 AI 투자 분석</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--blue:#2563EB;--deep:#1E3A8A;--light:#EFF6FF;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--text:#334155;--bg:#F8FAFC;--border:#E2E8F0}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+body{background:var(--bg);color:var(--text);line-height:1.55}
+header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.hin{max-width:1120px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:19px;font-weight:800;color:var(--deep)}.logo span{color:var(--blue)}
+.badge{font-size:11.5px;background:var(--light);color:var(--blue);padding:4px 10px;border-radius:99px;font-weight:700}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 24px 90px}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+h2.sec-t{font-size:15px;color:var(--deep);margin-bottom:14px;display:flex;gap:8px;align-items:center}
+label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:#475569}
+input,select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;background:#fff;color:var(--text)}
+input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.row{display:grid;gap:12px}.r4{grid-template-columns:repeat(4,1fr)}.r3{grid-template-columns:repeat(3,1fr)}.r2{grid-template-columns:1fr 1fr}
+@media(max-width:760px){.r4,.r3,.r2{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 22px;border:none;border-radius:10px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#1D4ED8}
+.btn-g{background:var(--light);color:var(--blue)}.btn-g:hover{background:#DBEAFE}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.tabs{display:flex;gap:8px;margin-bottom:18px}
+.tab{padding:10px 22px;border-radius:99px;font-weight:700;font-size:14px;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:#64748B}
+.tab.on{background:var(--deep);border-color:var(--deep);color:#fff}
+.hint{font-size:12px;color:#94A3B8;margin-top:4px}
+.mt{margin-top:16px}
+.status{font-size:13px;padding:10px 14px;border-radius:9px;margin-top:12px;display:none}
+.status.err{display:block;background:#FEF2F2;color:var(--red)}
+.status.ok{display:block;background:#ECFDF5;color:#047857}
+.status.load{display:block;background:var(--light);color:var(--blue)}
+/* 단지 리스트 */
+.list{max-height:340px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+.list-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.list-item:hover{background:var(--light)}
+.list-item.sel{background:var(--light);border-left:3px solid var(--blue)}
+.list-item b{font-size:14px;color:#0F172A}
+.list-item small{font-size:12px;color:#94A3B8}
+.chip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--bg);border:1px solid var(--border);margin:2px;cursor:pointer}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* 리포트 */
+#reportApt,#reportLand{display:none}
+.hero-card{background:linear-gradient(135deg,var(--deep),var(--blue));color:#fff;border-radius:16px;padding:26px;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+@media(max-width:760px){.hero-card{grid-template-columns:1fr;text-align:center}}
+.rating-box{text-align:center;min-width:170px}
+.rating-box .rt{font-size:27px;font-weight:800;letter-spacing:-.5px}
+.rating-box .sc{font-size:13px;opacity:.85;margin-top:4px}
+.sumg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:13px}
+.sumg small{display:block;font-size:11.5px;opacity:.8}.sumg b{font-size:17.5px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px}
+.kv .item{background:var(--bg);border-radius:9px;padding:12px 14px}
+.kv .item small{display:block;font-size:11.5px;color:#64748B}
+.kv .item b{font-size:16px;color:#0F172A}
+.pill{display:inline-block;padding:2px 11px;border-radius:99px;font-size:12.5px;font-weight:700}
+.pill.low{background:#ECFDF5;color:var(--green)}.pill.mid{background:#FFFBEB;color:var(--orange)}.pill.high{background:#FEF2F2;color:var(--red)}
+.bar-row{display:grid;grid-template-columns:150px 1fr 66px;align-items:center;gap:12px;margin-bottom:9px;font-size:12.5px}
+.bar-track{height:8px;background:#EDF2F7;border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .7s}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:9px 11px;text-align:right;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+th{background:var(--bg);color:#475569;font-size:12.5px}
+.ai-box{background:var(--light);border-left:4px solid var(--blue);border-radius:0 11px 11px 0;padding:17px 20px;font-size:14px}
+.ai-box .v{font-size:17px;font-weight:800;color:var(--deep);margin-bottom:6px}
+.disc{margin-top:24px;font-size:11.5px;color:#94A3B8;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px 15px}
+.chart-box{position:relative;height:280px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+/* ===== Land AI 라이트 랜딩 ===== */
+.grid-bg{background-image:linear-gradient(rgba(37,99,235,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,.045) 1px,transparent 1px);background-size:52px 52px}
+.logo-badge{background:var(--blue);color:#fff;width:33px;height:33px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+.beta{font-size:11px;color:#94A3B8;font-weight:700;margin-left:2px;align-self:flex-start}
+.btn-cta{background:var(--blue);color:#fff;padding:10px 18px;border-radius:10px;font-weight:700;font-size:13.5px;border:none;cursor:pointer}
+.btn-cta:hover{background:#1D4ED8}
+/* 히어로 (라이트) */
+.hero{background:#fff;padding:64px 24px 56px}
+.hero-grid{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+@media(max-width:920px){.hero-grid{grid-template-columns:1fr}.mock-wrap{display:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--light);color:var(--blue);border:1px solid #DBEAFE;padding:6px 15px;border-radius:99px;font-size:12.5px;font-weight:700;margin-bottom:20px}
+.hero h1{font-size:clamp(34px,4.4vw,52px);color:#0F172A;font-weight:800;line-height:1.16;letter-spacing:-2px}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero .sub{margin:20px 0 0;max-width:560px;font-size:16.5px;color:#64748B;line-height:1.65}
+.hero-search{margin-top:30px}
+.hero-search .hint{margin-top:10px}
+/* 목업 */
+.mock-wrap{position:relative}
+.mock{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 30px 70px rgba(15,23,42,.14);overflow:hidden}
+.mock-top{background:#F8FAFC;border-bottom:1px solid var(--border);padding:10px 16px;font-size:12px;color:#64748B;display:flex;gap:6px;align-items:center}
+.mock-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.mock-body{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;padding:14px}
+.mock-map{height:230px;border-radius:12px;background:linear-gradient(135deg,#0E2A5C,#1E3A8A 55%,#274FA8);position:relative;overflow:hidden}
+.mock-map::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(147,197,253,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(147,197,253,.14) 1px,transparent 1px);background-size:34px 34px}
+.mock-lot{position:absolute;left:22%;top:26%;width:46%;height:42%;border:2px solid #60A5FA;background:rgba(96,165,250,.22);border-radius:8px;transform:rotate(-6deg)}
+.mock-kv{display:grid;gap:8px}
+.mock-kv .item{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:9px 12px}
+.mock-kv small{display:block;font-size:10.5px;color:#94A3B8}
+.mock-kv b{font-size:14px;color:#0F172A}
+.float-card{position:absolute;background:#fff;border-radius:13px;box-shadow:0 14px 36px rgba(15,23,42,.16);padding:12px 17px;font-size:12px;color:#64748B}
+.float-yield{left:-26px;bottom:34px}
+.float-yield b{display:block;font-size:21px;color:var(--blue);margin-top:2px}
+.float-done{right:-14px;top:-16px;background:#FEF3C7;color:#92400E;font-weight:700}
+.float-done small{display:block;font-weight:500;font-size:11px;color:#B45309}
+/* 파란 샘플 밴드 */
+.band{background:#1E40AF;padding:24px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.bnd-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);color:#fff;padding:12px 26px;border-radius:12px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s}
+.bnd-btn:hover{background:rgba(255,255,255,.22)}
+.bnd-btn:disabled{opacity:.45;cursor:not-allowed}
+/* 마케팅 섹션 공통 */
+.sec-mkt{padding:74px 24px}
+.sec-mkt.alt{background:var(--bg)}
+.sec-head{text-align:center;max-width:720px;margin:0 auto 42px}
+.sec-head .kicker{color:var(--blue);font-weight:800;font-size:12px;letter-spacing:2.5px}
+.sec-head h2{font-size:30px;color:#0F172A;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+.sec-head p{margin-top:10px;color:#64748B;font-size:15px}
+.g3{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.g3{grid-template-columns:1fr}}
+.review{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px}
+.review .q{width:34px;height:34px;border-radius:50%;background:var(--light);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.stars{color:#FACC15;font-size:15px;letter-spacing:2px;margin:12px 0 10px}
+.review p{font-size:13.8px;color:#475569;line-height:1.7}
+.review .who{display:flex;gap:10px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.avatar{width:38px;height:38px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.review .who b{display:block;font-size:14px;color:#0F172A}
+.review .who small{color:#94A3B8;font-size:12px}
+.stats4{max-width:900px;margin:48px auto 0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;text-align:center}
+@media(max-width:700px){.stats4{grid-template-columns:repeat(2,1fr)}}
+.stats4 b{display:block;font-size:32px;color:var(--blue);font-weight:800}
+.stats4 small{color:#64748B;font-size:13px}
+.featc{background:#fff;border:1px solid var(--border);border-radius:16px;padding:26px}
+.featc .ic{width:44px;height:44px;border-radius:12px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:21px}
+.featc b{display:block;margin:14px 0 6px;font-size:16px;color:#0F172A}
+.featc p{font-size:13.5px;color:#64748B;line-height:1.65}
+/* 요금제 */
+.price{background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:28px;position:relative;display:flex;flex-direction:column}
+.price.pop{border-color:var(--blue);box-shadow:0 18px 46px rgba(37,99,235,.14)}
+.pop-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:4px 16px;border-radius:99px}
+.price .nm{font-size:15px;font-weight:800;color:#0F172A}
+.price .amt{font-size:31px;font-weight:800;color:#0F172A;margin:10px 0 2px}
+.price .amt small{font-size:14px;color:#94A3B8;font-weight:500}
+.price .de{font-size:13px;color:#64748B;margin-bottom:16px}
+.price ul{list-style:none;flex:1}
+.price li{font-size:13.5px;color:#475569;padding:6px 0 6px 24px;position:relative}
+.price li::before{content:"✓";position:absolute;left:2px;color:var(--blue);font-weight:800}
+.price .btn{width:100%;margin-top:18px}
+/* FAQ */
+.faq{max-width:760px;margin:0 auto}
+.faq details{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:10px}
+.faq summary{cursor:pointer;font-weight:700;font-size:14.5px;color:#0F172A}
+.faq details p{margin-top:10px;font-size:13.5px;color:#64748B;line-height:1.7}
+/* 최종 CTA */
+.cta-final{background:linear-gradient(150deg,#0F1F4B,#1E3A8A 55%,#2563EB);color:#fff;text-align:center;padding:80px 24px}
+.cta-final h2{font-size:32px;font-weight:800;letter-spacing:-.5px;line-height:1.3}
+.cta-final p{margin:14px auto 26px;color:rgba(255,255,255,.8);max-width:520px;font-size:15px}
+footer{background:#0F172A;color:#64748B;text-align:center;padding:26px;font-size:12px;line-height:1.8}
+/* ===== PDF 템플릿 스타일 리포트 ===== */
+.rep-label{display:inline-flex;align-items:center;gap:6px;color:var(--blue);font-size:12.5px;font-weight:700;margin-bottom:4px}
+.rep-meta{font-size:12px;color:#94A3B8;margin-top:2px}
+.sum5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}
+@media(max-width:900px){.sum5{grid-template-columns:repeat(2,1fr)}}
+.sc5{background:#fff;border:1px solid var(--border);border-radius:12px;padding:15px 16px}
+.sc5 small{display:block;font-size:11.5px;color:#64748B;margin-bottom:5px}
+.sc5 b{font-size:19px;color:#0F172A;line-height:1.25;display:block}
+.sc5 .sub{font-size:11.5px;color:#94A3B8;margin-top:3px;display:block}
+.sc5.score{background:#FEF2F2;border-color:#FECACA}
+.sc5.score.good{background:#ECFDF5;border-color:#A7F3D0}
+.sc5.score.mid{background:#FFFBEB;border-color:#FDE68A}
+.sc5.grade{background:#FFFBEB;border-color:#FDE68A}
+.gauge{height:6px;background:#E2E8F0;border-radius:99px;margin-top:9px;overflow:hidden}
+.gauge>div{height:100%;border-radius:99px;transition:width .8s}
+.ai-banner{background:var(--blue);color:#fff;border-radius:12px;padding:16px 22px;margin-top:14px}
+.ai-banner .ab-t{font-size:12px;font-weight:800;opacity:.85;margin-bottom:5px}
+.ai-banner .ab-b{font-size:15.5px;font-weight:700}
+.sec-score{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.sec-score b{font-size:21px;color:var(--orange);white-space:nowrap}
+.sec-score .gauge{flex:1;margin-top:0;height:7px}
+/* 리스크 카드 */
+.rk{border:1px solid var(--border);border-radius:12px;padding:15px 17px;margin-bottom:11px}
+.rk-h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.rk-h b{font-size:14.5px;color:#0F172A;flex:1}
+.rk-h small{color:#94A3B8;font-size:12px}
+.rk p{font-size:13px;color:#475569;line-height:1.65}
+.rk .imp{font-size:12px;font-weight:700;color:var(--red);margin-top:6px}
+.rk-act{background:#ECFDF5;border-radius:8px;padding:9px 13px;font-size:12.5px;color:#047857;margin-top:8px}
+/* 종합 결론 (검은 배너) */
+.concl{background:#0F172A;color:#E2E8F0;border-radius:14px;padding:26px 28px;margin-top:16px}
+.concl .c-t{font-size:15px;font-weight:800;color:#fff;margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.concl .c-verdict{background:var(--blue);color:#fff;padding:2px 13px;border-radius:99px;font-size:13px}
+.concl p{font-size:14px;line-height:1.85}
+/* 출처 */
+.src-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:14px}
+.src-box .s-t{font-size:13px;font-weight:700;color:#475569;margin-bottom:8px}
+.src-box p{font-size:12px;color:#94A3B8;line-height:1.7}
+.src-chip{display:inline-block;border:1px solid var(--border);border-radius:7px;padding:4px 11px;font-size:11.5px;color:#475569;margin:6px 6px 0 0;background:var(--bg)}
+@media print{.concl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.ai-banner{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.adv-toggle{font-size:12.5px;color:var(--blue);cursor:pointer;font-weight:700;margin-top:10px;display:inline-block}
+#advRow{display:none}
+/* 헤더 탭 (Land AI 스타일 세그먼트) */
+.htabs{display:flex;gap:4px;background:#F1F5F9;border:1px solid var(--border);border-radius:12px;padding:4px}
+.htab{padding:8px 18px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;color:#64748B;transition:.15s;white-space:nowrap}
+.htab.on{background:#fff;color:#0F172A;box-shadow:0 1px 4px rgba(15,23,42,.14)}
+.htab.soon{opacity:.45;cursor:not-allowed}
+@media(max-width:840px){.hin{flex-wrap:wrap;justify-content:center}.badge,.btn-cta{display:none}}
+/* 주소 한줄 검색 */
+.addr-wrap{position:relative;display:flex;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:8px;box-shadow:0 10px 34px rgba(15,23,42,.08)}
+.addr-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+.addr-wrap input{flex:1;padding:12px 14px;font-size:15.5px;border:none;outline:none;box-shadow:none}
+.addr-wrap input:focus{border:none;box-shadow:none}
+.btn-y{background:#FACC15;color:#1F2937;font-weight:800}
+.btn-y:hover{background:#EAB308}
+.addr-wrap .btn{padding:0 26px;font-size:15px;border-radius:10px}
+@media(max-width:640px){.addr-wrap{flex-direction:column}.addr-wrap .btn{padding:14px}}
+.addr-suggest{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 14px 40px rgba(15,23,42,.18);z-index:60;overflow:hidden;display:none;text-align:left}
+.addr-suggest div{padding:12px 18px;cursor:pointer;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;color:var(--text)}
+.addr-suggest div:hover,.addr-suggest div.hover{background:var(--light)}
+.addr-suggest small{color:#94A3B8;font-size:12px}
+@media print{header,.no-print,.hero{display:none!important}body{background:#fff}.card,.hero-card{box-shadow:none;break-inside:avoid}}
+</style>
+</head>
+<body>
+<header><div class="hin">
+  <div class="logo" style="display:flex;align-items:center;gap:9px"><span class="logo-badge">🏢</span>명당<span>연구소</span><span class="beta">Beta</span></div>
+  <div class="htabs no-print">
+    <div class="htab on" id="tabApt" onclick="setMode('apt')">🏢 아파트 분석</div>
+    <div class="htab" id="tabLand" onclick="setMode('land')">🌍 토지 분석</div>
+    <div class="htab" id="tabBiz" onclick="setMode('biz')">🏪 상권 분석</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center" class="no-print">
+    <span class="badge" id="keyBadge">⏳ 연결 확인 중</span>
+    <button class="btn-cta" onclick="document.getElementById('bigAddr').focus();window.scrollTo({top:0,behavior:'smooth'})">무료 분석 시작</button>
+  </div>
+</div></header>
+
+<!-- ===== HERO (Land AI 라이트) ===== -->
+<section class="hero grid-bg no-print">
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow">✨ AI 기반 부동산 분석 플랫폼</span>
+      <h1>주소 하나로<br><em>부동산의 모든 것</em>을<br>분석합니다.</h1>
+      <p class="sub">AI가 국토교통부 실거래 데이터를 기반으로 아파트·토지의 적정 가격, 잠재 가치, 리스크, 예상 수익률을 종합 분석합니다.</p>
+      <div class="hero-search">
+        <div class="addr-wrap">
+          <input id="bigAddr" placeholder="아파트명 또는 주소를 입력하세요" autocomplete="off"
+            oninput="addrInput()" onkeydown="if(event.key==='Enter')loadData()">
+          <button class="btn btn-y" id="loadBtn" onclick="loadData()">분석 →</button>
+          <div class="addr-suggest" id="addrSuggest"></div>
+        </div>
+        <div class="hint">주소나 단지명을 입력하면 자동완성 목록에서 정확한 대상을 선택할 수 있습니다.
+          <span class="adv-toggle" onclick="document.getElementById('advRow').style.display=document.getElementById('advRow').style.display==='flex'?'none':'flex'">⚙️ 상세 설정</span></div>
+        <div id="advRow" class="mt" style="gap:12px;flex-wrap:wrap">
+          <div><label>조회 기간</label><select id="months" style="width:130px"><option value="12">12개월</option><option value="24" selected>24개월</option><option value="36">36개월</option></select></div>
+          <div><label>법정동코드 직접 입력</label><input id="lawdManual" placeholder="5자리 (예: 41135)" style="width:200px"></div>
+        </div>
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+    <div class="mock-wrap">
+      <div class="mock">
+        <div class="mock-top"><span class="mock-dot" style="background:#F87171"></span><span class="mock-dot" style="background:#FBBF24"></span><span class="mock-dot" style="background:#34D399"></span>&nbsp;투자 분석 리포트</div>
+        <div class="mock-body">
+          <div class="mock-map"><div class="mock-lot"></div></div>
+          <div class="mock-kv">
+            <div class="item"><small>투자 등급</small><b style="color:var(--blue)">BUY · 82점</b></div>
+            <div class="item"><small>적정가</small><b>12억 4,000만</b></div>
+            <div class="item"><small>전세가율</small><b>58.2%</b></div>
+            <div class="item"><small>3년 기준 IRR</small><b style="color:var(--green)">+14.8%</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="float-card float-yield">예상 수익률<b>+18.5%</b></div>
+      <div class="float-card float-done">AI 분석 완료<small>3초 만에 리포트 생성</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- 파란 샘플 밴드 -->
+<div class="band no-print">
+  <button class="bnd-btn" onclick="sampleReport('apt')">🏢 아파트 샘플 — 래미안 원베일리</button>
+  <button class="bnd-btn" onclick="sampleReport('land')">🌍 토지 샘플 — 청와대로 1</button>
+  <button class="bnd-btn" onclick="sampleReport('biz')">🏪 상권 샘플 — AK플라자 홍대</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== 아파트: 대상 선택 ===== -->
+  <div class="card no-print" id="aptPicker" style="display:none">
+    <h2 class="sec-t">🏢 분석 대상 선택 <span id="aptCount" style="font-weight:500;color:#94A3B8;font-size:12.5px"></span></h2>
+    <div class="row r2">
+      <div>
+        <label>단지 검색</label>
+        <input id="aptFilter" placeholder="단지명 검색" oninput="renderComplexList()">
+        <div class="list mt" id="complexList"></div>
+      </div>
+      <div>
+        <label>면적 타입</label>
+        <div id="areaChips" class="mt" style="min-height:34px">단지를 먼저 선택하세요</div>
+        <div class="row r2 mt">
+          <div><label>매수 예정가 / 호가 (만원)</label><input id="askPrice" type="number" placeholder="예: 82000"></div>
+          <div><label>무위험수익률 rf (%)</label><input id="rf" type="number" value="3.0" step="0.1"></div>
+        </div>
+        <div class="row r2 mt">
+          <div><label>전월세 전환율 (%)</label><input id="convRate" type="number" value="6.0" step="0.5"></div>
+          <div style="display:flex;align-items:end"><button class="btn btn-p" style="width:100%" onclick="analyzeApt()">🧠 월스트리트 분석 실행</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 토지: 대상 입력 ===== -->
+  <div class="card no-print" id="landPicker" style="display:none">
+    <h2 class="sec-t"><span id="landPickTitle">🌍 분석 대상 토지</span> <span id="landCount" style="font-weight:500;color:#94A3B8;font-size:12.5px"></span></h2>
+    <div class="row r4">
+      <div><label>법정동</label><select id="landDong"></select></div>
+      <div><label id="labJimok">지목</label><select id="landJimok"></select></div>
+      <div><label id="labUse">용도지역</label><select id="landUse"></select></div>
+      <div><label>무위험수익률 rf (%)</label><input id="rfLand" type="number" value="3.0" step="0.1"></div>
+    </div>
+    <div class="row r3 mt">
+      <div><label>대상 면적 (㎡)</label><input id="landArea" type="number" placeholder="예: 1650 (500평)"></div>
+      <div><label>매수 예정가 / 호가 (만원)</label><input id="landAsk" type="number" placeholder="예: 90000"></div>
+      <div style="display:flex;align-items:end"><button class="btn btn-p" style="width:100%" onclick="analyzeLand()">🧠 월스트리트 분석 실행</button></div>
+    </div>
+  </div>
+
+  <!-- ===== 아파트 리포트 ===== -->
+  <div id="reportApt">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:22px 0 14px;flex-wrap:wrap;gap:8px">
+      <h2 style="font-size:20px;color:var(--deep)" id="aptTitle"></h2>
+      <div style="display:flex;gap:8px" class="no-print">
+        <button class="btn btn-g" onclick="shareReport()">🔗 링크 공유</button>
+        <button class="btn btn-g" onclick="downloadCSV()">⬇️ 데이터 CSV</button>
+        <button class="btn btn-g" onclick="window.print()">📄 PDF 저장</button>
+      </div>
+    </div>
+
+    <div class="rep-label">📄 AI 아파트 분석 리포트</div>
+    <div class="rep-meta" id="aRepMeta"></div>
+
+    <div class="sum5">
+      <div class="sc5 score" id="aScoreCard"><small>종합 점수</small><b><span id="aScoreNum">-</span><span style="font-size:13px;color:#94A3B8">/100</span></b><div class="gauge"><div id="aGauge" style="width:0;background:var(--red)"></div></div></div>
+      <div class="sc5 grade"><small>투자 등급</small><b id="aRating">-</b><span class="sub" id="aGradeKo"></span></div>
+      <div class="sc5"><small>매수 예정가</small><b id="aCardAsk">-</b><span class="sub" id="aCardUnit"></span></div>
+      <div class="sc5"><small>적정가 (Target)</small><b id="aCardTarget">-</b><span class="sub" id="aCardUp"></span></div>
+      <div class="sc5"><small>전세 시세 / 갭</small><b id="aCardJeonse">-</b><span class="sub" id="aCardGap"></span></div>
+    </div>
+
+    <div class="ai-banner"><div class="ab-t">✅ AI 추천 의견</div><div class="ab-b" id="aVerdictLine">-</div></div>
+
+    <div class="grid2 mt">
+      <div class="card"><h2 class="sec-t">📊 상대가치 평가 (Comparable Analysis)</h2><div class="kv" id="aComps"></div><p class="hint mt" id="aCompsNote"></p></div>
+      <div class="card"><h2 class="sec-t">💵 수익가치 평가 (Income Approach)</h2><div class="kv" id="aIncome"></div><p class="hint mt" id="aIncomeNote"></p></div>
+    </div>
+
+    <div class="card mt" id="aMapCard" style="display:none">
+      <h2 class="sec-t">🗺️ 위치 및 주변 지도</h2>
+      <iframe id="aMap" style="width:100%;height:320px;border:1px solid var(--border);border-radius:12px" loading="lazy"></iframe>
+      <p class="hint mt">OpenStreetMap 기반 위치 표시 (대략적 위치)</p>
+    </div>
+
+    <div class="card mt">
+      <h2 class="sec-t">🏘️ 주변 단지 비교</h2>
+      <table><thead><tr><th>단지</th><th>거래(12M)</th><th>중앙값</th><th>㎡당가</th><th>전세가율</th><th>가격 모멘텀</th></tr></thead><tbody id="aPeers"></tbody></table>
+      <p class="hint mt" id="aPeersNote"></p>
+    </div>
+
+    <div class="card mt">
+      <h2 class="sec-t">📈 가격 추이 &amp; 실거래 분포</h2>
+      <div class="chart-box"><canvas id="priceChart"></canvas></div>
+    </div>
+
+    <div class="grid2 mt">
+      <div class="card"><h2 class="sec-t">📉 기술적 지표 (Technicals &amp; Risk)</h2><div class="kv" id="aTech"></div></div>
+      <div class="card"><h2 class="sec-t">🔁 유동성 &amp; 거래량</h2>
+        <div class="chart-box" style="height:180px"><canvas id="volChart"></canvas></div>
+        <div class="kv mt" id="aLiq"></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h2 class="sec-t">🎯 시나리오 IRR (3년 · 전세 레버리지 반영)</h2>
+      <table><thead><tr><th>시나리오</th><th>연간 가격 가정</th><th>3년 후 예상가</th><th>투입 자기자본</th><th>레버리지 IRR</th></tr></thead><tbody id="aScenario"></tbody></table>
+      <p class="hint mt">※ 취득세·중개보수·보유세·공실 미반영 단순화 모형. 자기자본 = 매수가 − 전세 시세.</p>
+    </div>
+
+    <div class="card mt"><h2 class="sec-t">⭐ 종합 스코어카드</h2><div id="aBars"></div></div>
+
+    <div class="card mt"><h2 class="sec-t">⚠️ 리스크 분석</h2><div id="aRiskCards"></div></div>
+
+    <div class="concl">
+      <div class="c-t">📄 종합 분석 결론 <span class="c-verdict" id="aFinal">-</span></div>
+      <p id="aFinalTxt" style="margin-bottom:10px;font-weight:600"></p>
+      <p id="aComment"></p>
+    </div>
+
+    <div class="src-box">
+      <div class="s-t">🔎 데이터 신뢰도 및 출처</div>
+      <p>본 리포트의 시세 데이터는 국토교통부 실거래가 공개시스템의 신고 자료를 기반으로 하며, 분석 기준일 시점의 공개 데이터를 사용합니다. 투자 점수·등급은 상대가치(Comps)·수익가치(Income)·기술적 지표를 결합한 정량 모형의 산출값으로, 실제 투자 의사결정에 직접 활용하기보다는 대상의 특성과 상대적 위치를 이해하는 참고 자료로 활용되어야 합니다.</p>
+      <span class="src-chip">📊 국토교통부 실거래가 공개시스템</span><span class="src-chip">🏢 K-apt 공동주택관리정보시스템</span><span class="src-chip">🌐 공공데이터포털 (data.go.kr)</span><span class="src-chip">🤖 OpenAI 분석 코멘트</span>
+    </div>
+    <div class="disc" id="discApt"></div>
+  </div>
+
+  <!-- ===== 토지 리포트 ===== -->
+  <div id="reportLand">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:22px 0 14px;flex-wrap:wrap;gap:8px">
+      <h2 style="font-size:20px;color:var(--deep)" id="lTitle"></h2>
+      <div style="display:flex;gap:8px" class="no-print">
+        <button class="btn btn-g" onclick="shareReport()">🔗 링크 공유</button>
+        <button class="btn btn-g" onclick="downloadCSV()">⬇️ 데이터 CSV</button>
+        <button class="btn btn-g" onclick="window.print()">📄 PDF 저장</button>
+      </div>
+    </div>
+    <div class="rep-label" id="lRepLabel">📄 AI 토지 분석 리포트</div>
+    <div class="rep-meta" id="lRepMeta"></div>
+
+    <div class="sum5">
+      <div class="sc5 score" id="lScoreCard"><small>종합 점수</small><b><span id="lScoreNum">-</span><span style="font-size:13px;color:#94A3B8">/100</span></b><div class="gauge"><div id="lGauge" style="width:0;background:var(--red)"></div></div></div>
+      <div class="sc5 grade"><small>투자 등급</small><b id="lRating">-</b><span class="sub" id="lGradeKo"></span></div>
+      <div class="sc5"><small>호가</small><b id="lCardAsk">-</b><span class="sub" id="lCardUnit"></span></div>
+      <div class="sc5"><small>Comps 적정가</small><b id="lCardTarget">-</b><span class="sub" id="lCardPrem"></span></div>
+      <div class="sc5"><small>가격 백분위 / 비교거래</small><b id="lCardPct">-</b><span class="sub" id="lCardN"></span></div>
+    </div>
+
+    <div class="ai-banner"><div class="ab-t">✅ AI 추천 의견</div><div class="ab-b" id="lVerdictLine">-</div></div>
+    <div class="grid2 mt">
+      <div class="card"><h2 class="sec-t">📊 상대가치 평가 (㎡당가 Comps)</h2><div class="kv" id="lComps"></div><p class="hint mt" id="lCompsNote"></p></div>
+      <div class="card"><h2 class="sec-t">📉 추세 &amp; 리스크</h2><div class="kv" id="lTech"></div></div>
+    </div>
+    <div class="card mt" id="lMapCard" style="display:none">
+      <h2 class="sec-t">🗺️ 위치 및 주변 지도</h2>
+      <iframe id="lMap" style="width:100%;height:320px;border:1px solid var(--border);border-radius:12px" loading="lazy"></iframe>
+      <p class="hint mt">OpenStreetMap 기반 위치 표시 (대략적 위치)</p>
+    </div>
+
+    <div class="card mt" id="lLawCard" style="display:none">
+      <h2 class="sec-t">⚖️ 법규 검토 및 개발 가능성 (법정 상한 기준)</h2>
+      <div class="kv" id="lLaw"></div>
+      <p class="hint mt" id="lLawNote">※ 국토계획법 시행령의 법정 상한 기준이며, 실제 허용치는 지자체 조례·지구단위계획·중첩 규제에 따라 축소될 수 있습니다. 토지이음(eum.go.kr)에서 필지별 규제를 반드시 확인하세요.</p>
+    </div>
+
+    <div class="card mt"><h2 class="sec-t">📈 ㎡당 가격 분포 &amp; 추이</h2><div class="chart-box"><canvas id="landChart"></canvas></div></div>
+    <div class="card mt"><h2 class="sec-t">🧾 최근 비교 거래 (Comps)</h2>
+      <table><thead><tr><th>거래일</th><th>법정동</th><th>지목</th><th>용도지역</th><th>면적(㎡)</th><th>거래가(만원)</th><th>㎡당가(만원)</th></tr></thead><tbody id="lCompsTable"></tbody></table>
+    </div>
+    <div class="card mt"><h2 class="sec-t">⭐ 종합 스코어카드</h2><div id="lBars"></div></div>
+    <div class="card mt"><h2 class="sec-t">⚠️ 리스크 분석</h2><div id="lRiskCards"></div></div>
+
+    <div class="concl">
+      <div class="c-t">📄 종합 분석 결론 <span class="c-verdict" id="lFinal">-</span></div>
+      <p id="lFinalTxt" style="margin-bottom:10px;font-weight:600"></p>
+      <p id="lComment"></p>
+    </div>
+
+    <div class="src-box">
+      <div class="s-t">🔎 데이터 신뢰도 및 출처</div>
+      <p>본 리포트의 시세 데이터는 국토교통부 실거래가 공개시스템의 신고 자료(지분거래 제외)를 기반으로 합니다. 토지·상가의 실제 가치는 용도지역, 접도 조건, 인허가, 임대차 현황 등 개별 요인에 따라 크게 달라지므로, 본 분석은 지역 시세 수준과 상대적 위치를 파악하는 참고 자료로 활용되어야 합니다.</p>
+      <span class="src-chip">📊 국토교통부 실거래가 공개시스템</span><span class="src-chip">🌐 공공데이터포털 (data.go.kr)</span><span class="src-chip">🤖 OpenAI 분석 코멘트</span>
+    </div>
+    <div class="disc" id="discLand"></div>
+  </div>
+</div>
+
+<!-- ===== 마케팅 섹션 (Land AI 스타일) ===== -->
+<section class="sec-mkt alt no-print">
+  <div class="sec-head">
+    <div class="kicker">CUSTOMER STORIES</div>
+    <h2>고객 후기</h2>
+    <p>부동산 투자자와 실무자들이 직접 경험한 명당연구소의 가치를 들어보세요.</p>
+  </div>
+  <div class="g3">
+    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
+      <p>"매수 검토 전 사전 스크리닝 용도로 활용하고 있습니다. 실거래 대비 호가 프리미엄과 전세가율 분석이 특히 유용하며, 검토 시간을 기존 대비 크게 단축할 수 있었습니다."</p>
+      <div class="who"><span class="avatar" style="background:#FACC15">K</span><span><b>김OO</b><small>개인 투자자 · 갭투자 5년차</small></span></div></div>
+    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
+      <p>"고객 상담 시 현장에서 바로 리포트를 뽑아 보여주면 신뢰도가 크게 올라갑니다. 실거래 차트와 시나리오 수익률, PDF 저장 기능이 실무에서 매우 유용합니다."</p>
+      <div class="who"><span class="avatar" style="background:#2563EB">L</span><span><b>이OO</b><small>공인중개사 · 일산 서구</small></span></div></div>
+    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
+      <p>"토지 ㎡당가 백분위와 유사 거래 비교 기능이 인상적입니다. 지분거래를 걸러주고 환금성 위험까지 짚어줘서 토지 입문자에게 특히 도움이 됩니다."</p>
+      <div class="who"><span class="avatar" style="background:#10B981">P</span><span><b>박OO</b><small>토지 투자자 · 경기 북부</small></span></div></div>
+  </div>
+  <div class="stats4">
+    <div><b>3초</b><small>평균 분석 시간</small></div>
+    <div><b>18K+</b><small>전국 분석 가능 단지</small></div>
+    <div><b>5가지</b><small>월스트리트 분석 기법</small></div>
+    <div><b>100%</b><small>국토부 실거래 데이터</small></div>
+  </div>
+</section>
+
+<section class="sec-mkt no-print">
+  <div class="sec-head">
+    <div class="kicker">FEATURES</div>
+    <h2>국내 유일의 AI 실거래 분석 플랫폼</h2>
+    <p>최단시간, 실거래 데이터 정밀도, 그리고 PDF 리포트 제공까지</p>
+  </div>
+  <div class="g3">
+    <div class="featc"><span class="ic">📊</span><b>상대가치 평가 (Comps)</b><p>동일 단지·유사 면적의 최근 실거래 중앙값으로 적정가를 산출하고 호가 프리미엄을 판정합니다.</p></div>
+    <div class="featc"><span class="ic">💵</span><b>수익가치 평가 (Income)</b><p>전월세 실거래로 연 임대수익을 환산해 Cap Rate와 수익가치(DCF)를 계산합니다.</p></div>
+    <div class="featc"><span class="ic">📈</span><b>기술적 지표</b><p>가격 모멘텀, 변동성, Sharpe Ratio, 최대낙폭(MDD)으로 리스크를 정량화합니다.</p></div>
+    <div class="featc"><span class="ic">🎯</span><b>시나리오 IRR</b><p>전세 레버리지를 반영한 3년 약세·기준·강세 시나리오별 수익률을 제시합니다.</p></div>
+    <div class="featc"><span class="ic">🤖</span><b>AI 애널리스트 코멘트</b><p>GPT가 분석 데이터를 근거로 전문가 수준의 투자 코멘트를 작성합니다.</p></div>
+    <div class="featc"><span class="ic">📄</span><b>PDF 리포트</b><p>투자 검토·고객 공유용 보고서를 원클릭으로 저장합니다.</p></div>
+  </div>
+</section>
+
+<section class="sec-mkt alt no-print">
+  <div class="sec-head">
+    <div class="kicker">PRICING</div>
+    <h2>합리적인 요금제</h2>
+    <p>필요에 맞는 플랜을 선택하세요. (예시 요금제 — 기획서 기준)</p>
+  </div>
+  <div class="g3" style="align-items:stretch">
+    <div class="price"><div class="nm">Basic</div><div class="amt">₩19,900<small>/월</small></div><div class="de">개인 투자자를 위한 기본 분석</div>
+      <ul><li>아파트 상세 리포트</li><li>투자 점수·등급</li><li>PDF 다운로드</li><li>이메일 지원</li></ul>
+      <button class="btn btn-g">Basic 시작하기</button></div>
+    <div class="price pop"><span class="pop-badge">인기</span><div class="nm">Pro</div><div class="amt">₩49,000<small>/월</small></div><div class="de">전문 투자자를 위한 심층 분석</div>
+      <ul><li>아파트 + 토지 상세 분석</li><li>AI 애널리스트 코멘트</li><li>시나리오 IRR·민감도</li><li>우선 지원</li></ul>
+      <button class="btn btn-p">Pro 시작하기</button></div>
+    <div class="price"><div class="nm">Expert</div><div class="amt">₩149,000<small>/월</small></div><div class="de">중개사·법인 맞춤형</div>
+      <ul><li>전문가용 PDF·고객 공유</li><li>B2B 기능</li><li>무제한 리포트</li><li>전담 지원</li></ul>
+      <button class="btn btn-g">문의하기</button></div>
+  </div>
+</section>
+
+<section class="sec-mkt no-print">
+  <div class="sec-head">
+    <div class="kicker">FAQ</div>
+    <h2>자주 묻는 질문</h2>
+  </div>
+  <div class="faq">
+    <details><summary>분석 결과를 실제 투자에 그대로 활용해도 되나요?</summary><p>본 리포트는 국토교통부 실거래 데이터 기반의 참고용 분석 자료입니다. 실제 투자 전 반드시 현장 확인, 권리분석, 전문가 상담을 병행하세요.</p></details>
+    <details><summary>데이터 출처는 어디인가요?</summary><p>국토교통부 실거래가 공개시스템(매매·전월세·토지), K-apt 공동주택 단지 목록 등 공공데이터를 사용합니다. 리포트에 분석 기준일이 표시됩니다.</p></details>
+    <details><summary>어떤 분석 기법을 사용하나요?</summary><p>월스트리트에서 쓰이는 Comparable Analysis(상대가치), Income Approach(수익환원), 모멘텀·변동성·Sharpe 분석, 시나리오 IRR을 결합해 100점 스코어와 투자 등급을 산출합니다.</p></details>
+    <details><summary>리포트는 어떤 형식으로 제공되나요?</summary><p>웹 인터랙티브 리포트와 PDF 저장을 모두 지원합니다.</p></details>
+  </div>
+</section>
+
+<section class="cta-final no-print">
+  <h2>완전히 새로운 부동산 분석을<br>경험해 보세요.</h2>
+  <p>주소 하나로 적정 가격부터 리스크, 예상 수익률까지 AI가 분석합니다.</p>
+  <button class="btn btn-y" onclick="window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>document.getElementById('bigAddr').focus(),600)">무료 분석 시작</button>
+  <button class="btn" style="background:rgba(255,255,255,.14);color:#fff;margin-left:10px" onclick="sampleReport('apt')">샘플 리포트 보기</button>
+</section>
+
+<footer class="no-print">
+  🏢 명당연구소 — AI 부동산 투자 분석 플랫폼 (프로토타입)<br>
+  본 서비스의 분석 결과는 참고용이며 투자 권유가 아닙니다. 투자 판단의 책임은 투자자 본인에게 있습니다.
+</footer>
+
+<script>
+/* ================= 법정동코드 (시군구 5자리) ================= */
+const LAWD = {
+"서울특별시":{"종로구":"11110","중구":"11140","용산구":"11170","성동구":"11200","광진구":"11215","동대문구":"11230","중랑구":"11260","성북구":"11290","강북구":"11305","도봉구":"11320","노원구":"11350","은평구":"11380","서대문구":"11410","마포구":"11440","양천구":"11470","강서구":"11500","구로구":"11530","금천구":"11545","영등포구":"11560","동작구":"11590","관악구":"11620","서초구":"11650","강남구":"11680","송파구":"11710","강동구":"11740"},
+"경기도":{"수원시 장안구":"41111","수원시 권선구":"41113","수원시 팔달구":"41115","수원시 영통구":"41117","성남시 수정구":"41131","성남시 중원구":"41133","성남시 분당구":"41135","의정부시":"41150","안양시 만안구":"41171","안양시 동안구":"41173","부천시 원미구":"41192","부천시 소사구":"41194","부천시 오정구":"41196","광명시":"41210","평택시":"41220","동두천시":"41250","안산시 상록구":"41271","안산시 단원구":"41273","고양시 덕양구":"41281","고양시 일산동구":"41285","고양시 일산서구":"41287","과천시":"41290","구리시":"41310","남양주시":"41360","오산시":"41370","시흥시":"41390","군포시":"41410","의왕시":"41430","하남시":"41450","용인시 처인구":"41461","용인시 기흥구":"41463","용인시 수지구":"41465","파주시":"41480","이천시":"41500","안성시":"41550","김포시":"41570","화성시":"41590","광주시":"41610","양주시":"41630","포천시":"41650","여주시":"41670"},
+"인천광역시":{"중구":"28110","동구":"28140","미추홀구":"28177","연수구":"28185","남동구":"28200","부평구":"28237","계양구":"28245","서구":"28260","강화군":"28710"},
+"부산광역시":{"중구":"26110","서구":"26140","동구":"26170","영도구":"26200","부산진구":"26230","동래구":"26260","남구":"26290","북구":"26320","해운대구":"26350","사하구":"26380","금정구":"26410","강서구":"26440","연제구":"26470","수영구":"26500","사상구":"26530","기장군":"26710"},
+"대구광역시":{"중구":"27110","동구":"27140","서구":"27170","남구":"27200","북구":"27230","수성구":"27260","달서구":"27290","달성군":"27710"},
+"대전광역시":{"동구":"30110","중구":"30140","서구":"30170","유성구":"30200","대덕구":"30230"},
+"광주광역시":{"동구":"29110","서구":"29140","남구":"29155","북구":"29170","광산구":"29200"},
+"울산광역시":{"중구":"31110","남구":"31140","동구":"31170","북구":"31200","울주군":"31710"},
+"세종특별자치시":{"세종시":"36110"},
+"강원특별자치도":{"춘천시":"51110","원주시":"51130","강릉시":"51150","동해시":"51170","속초시":"51210"},
+"충청북도":{"청주시 상당구":"43111","청주시 서원구":"43112","청주시 흥덕구":"43113","청주시 청원구":"43114","충주시":"43130","제천시":"43150"},
+"충청남도":{"천안시 동남구":"44131","천안시 서북구":"44133","공주시":"44150","아산시":"44200","서산시":"44210","당진시":"44270"},
+"전북특별자치도":{"전주시 완산구":"52111","전주시 덕진구":"52113","군산시":"52130","익산시":"52140"},
+"전라남도":{"목포시":"46110","여수시":"46130","순천시":"46150","광양시":"46230"},
+"경상북도":{"포항시 남구":"47111","포항시 북구":"47113","경주시":"47130","안동시":"47170","구미시":"47190"},
+"경상남도":{"창원시 의창구":"48121","창원시 성산구":"48123","창원시 마산합포구":"48125","창원시 마산회원구":"48127","창원시 진해구":"48129","진주시":"48170","김해시":"48250","거제시":"48310","양산시":"48330"},
+"제주특별자치도":{"제주시":"50110","서귀포시":"50130"}
+};
+
+/* ================= 상태 & 헬퍼 ================= */
+const $=id=>document.getElementById(id);
+let state={mode:"apt",trades:[],rents:[],land:[],biz:[],complex:null,areaBand:null,regionName:"",charts:{}};
+const curLand=()=>state.mode==="biz"?state.biz:state.land; // 토지/상권 공용 데이터셋
+const fmt=n=>{n=Math.round(n);if(Math.abs(n)>=10000){const e=Math.trunc(n/10000),m=Math.abs(Math.round(n%10000));return m?`${e}억 ${m.toLocaleString()}만`:`${e}억`;}return n.toLocaleString()+"만";};
+const pct=(x,d=1)=>(x*100).toFixed(d)+"%";
+const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const std=a=>{if(a.length<2)return null;const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1));};
+function ols(xs,ys){const n=xs.length,mx=mean(xs),my=mean(ys);let num=0,den=0;for(let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;}return den?num/den:0;}
+function percentile(arr,v){const s=[...arr].sort((a,b)=>a-b);let c=0;for(const x of s)if(x<=v)c++;return c/s.length;}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function setStatus(cls,msg){const s=$("status");s.className="status "+cls;s.textContent=msg;}
+
+/* ================= 주소 한줄 검색 (내장 법정동코드 DB 매칭) ================= */
+const REGIONS=[];
+for(const[sido,gus]of Object.entries(LAWD))for(const[gu,code]of Object.entries(gus))
+  REGIONS.push({sido,gu,code,full:`${sido} ${gu}`});
+/** 질의 토큰이 지역명에 포함되는지 (예: "성남"→"성남시", "일산동구"→매칭) */
+function matchRegion(query){
+  const tokens=query.trim().split(/\s+/).filter(Boolean);
+  if(!tokens.length)return{cands:[],leftover:""};
+  const scored=[];
+  for(const r of REGIONS){
+    const hay=(r.full+" "+r.gu.replace(/\s/g,"")).toLowerCase();
+    let hit=0;const left=[];
+    for(const t of tokens){
+      const tl=t.toLowerCase();
+      if(hay.includes(tl)||hay.includes(tl.replace(/(시|군|구|도)$/,"")))hit++;
+      else left.push(t);
+    }
+    if(hit>0)scored.push({r,hit,left,exact:r.gu.replace(/\s/g,"").includes(tokens[0])?1:0});
+  }
+  scored.sort((a,b)=>b.hit-a.hit||b.exact-a.exact||a.r.full.length-b.r.full.length);
+  return{cands:scored.slice(0,8),leftover:scored.length?scored[0].left.join(" "):""};
+}
+/* 자동완성: 내장 지역 매칭 + 카카오 장소/주소 검색(아파트명 지원) 통합 */
+let geoTimer=null,geoSeq=0;
+function addrInput(){
+  state.selRegion=null;state.selPlace=null;
+  const q=$("bigAddr").value;
+  renderSuggest(q,[]);
+  clearTimeout(geoTimer);
+  if(q.trim().length>=2)geoTimer=setTimeout(async()=>{
+    const seq=++geoSeq;
+    try{
+      const r=await fetch("/api/geo?q="+encodeURIComponent(q));const j=await r.json();
+      if(seq!==geoSeq)return; // 오래된 응답 무시
+      state._geoError=j.error||j.indexError||null;
+      if(j.building)state._geoError="전국 아파트 색인 구축 중 (2~3분)... 완료되면 단지명 검색이 훨씬 정확해집니다";
+      renderSuggest(q,j.items||[]);
+    }catch{}
+  },280);
+}
+function renderSuggest(q,geoItems){
+  const box=$("addrSuggest");
+  const{cands}=matchRegion(q);
+  const rows=[];
+  geoItems.forEach((g,i)=>rows.push({type:"place",g,key:"p"+i}));
+  cands.forEach((c,i)=>rows.push({type:"region",c,key:"r"+i}));
+  state._rows=rows;
+  if(!q.trim()||(!rows.length&&!state._geoError)){box.style.display="none";return;}
+  let html=rows.map((row,i)=>row.type==="place"
+    ?`<div onclick="pickRow(${i})"><span>${row.g.kind==="place"?"🏢":"📍"} ${row.g.place}</span><small>${row.g.addr||""}</small></div>`
+    :`<div onclick="pickRow(${i})"><span>📍 ${row.c.r.full}${row.c.left.length?` <b style='color:var(--blue)'>${row.c.left.join(" ")}</b>`:""}</span><small>지역 전체</small></div>`).join("");
+  if(state._geoError)html+=`<div style="cursor:default;background:#FFFBEB"><small>⚠️ ${state._geoError}</small></div>`;
+  box.innerHTML=html;
+  box.style.display="block";
+}
+function pickRow(i){
+  const row=state._rows[i];
+  if(row.type==="region"){
+    state.selRegion=row.c.r;state.aptQuery=row.c.left.join(" ");
+    $("bigAddr").value=row.c.r.full+(state.aptQuery?" "+state.aptQuery:"");
+  }else{
+    const g=row.g;
+    if(g.lawd){ // 아파트 색인 결과: 정확한 법정동코드 보유
+      state.selRegion={code:g.lawd,full:g.region||g.addr};
+    }else{
+      const{cands}=matchRegion(g.region||g.addr||"");
+      if(!cands.length){setStatus("err",`"${g.region}" 지역 코드가 내장 DB에 없습니다. ⚙️ 상세 설정에서 법정동코드를 직접 입력해주세요.`);return;}
+      state.selRegion=cands[0].r;
+    }
+    state.aptQuery=g.kind==="place"?cleanPlaceName(g.place):"";
+    $("bigAddr").value=g.place;
+  }
+  $("addrSuggest").style.display="none";
+}
+/** 카카오 장소명 → 실거래 단지명 매칭용 핵심 키워드 (예: "강선마을14단지두산아파트"→"강선") */
+function cleanPlaceName(name){
+  return name.replace(/\s/g,"").replace(/(아파트|APT|단지)$/i,"");
+}
+/** 단지 자동 매칭: 전체 → 점점 짧은 접두어로 시도 */
+function findComplexHits(q){
+  const norm=s=>s.replace(/[\s()]/g,"");
+  const nq=norm(q);
+  for(let len=nq.length;len>=2;len--){
+    const part=nq.slice(0,len);
+    const hits=complexes.filter(c=>norm(c.apt).includes(part)||c.dong.includes(part));
+    if(hits.length)return{hits,part};
+  }
+  return{hits:[],part:q};
+}
+document.addEventListener("click",e=>{if(!e.target.closest(".addr-wrap"))$("addrSuggest").style.display="none";});
+
+/* ================= 데이터 CSV 다운로드 ================= */
+function downloadCSV(){
+  let rows=[],name="리포트";
+  if(state.mode==="apt"&&state.complex&&state.areaBand){
+    rows=[["거래일","단지","법정동","전용면적(㎡)","층","거래금액(만원)","㎡당가(만원)"]];
+    state.complex.trades.filter(t=>Math.abs(t.area-state.areaBand)<=3)
+      .sort((a,b)=>b.date-a.date)
+      .forEach(t=>rows.push([t.date.toISOString().slice(0,10),t.apt,t.dong,t.area,t.floor,t.amount,(t.amount/t.area).toFixed(1)]));
+    name=state.complex.apt+"_"+state.areaBand.toFixed(0)+"㎡";
+  }else if(state.mode!=="apt"&&curLand().length){
+    rows=[["거래일","법정동",state.mode==="biz"?"주용도":"지목",state.mode==="biz"?"유형":"용도지역","면적(㎡)","거래금액(만원)","㎡당가(만원)"]];
+    [...curLand()].sort((a,b)=>b.date-a.date).slice(0,3000)
+      .forEach(t=>rows.push([t.date.toISOString().slice(0,10),t.dong,t.jimok,t.use,t.area,t.amount,(t.amount/t.area).toFixed(1)]));
+    name=(state.mode==="biz"?"상권":"토지")+"_"+state.regionName.replace(/\s/g,"");
+  }
+  if(rows.length<2)return alert("먼저 분석을 실행해주세요.");
+  const csv="﻿"+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download=`명당연구소_${name}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ================= 리포트 공유 ================= */
+async function shareReport(){
+  let payload=null;
+  if(state.mode==="apt"&&state.complex&&+$("askPrice").value){
+    payload={mode:"apt",lawd:state.lawd,region:state.regionName,months:$("months").value,
+      apt:state.complex.apt,dong:state.complex.dong,band:state.areaBand,
+      ask:+$("askPrice").value,rf:$("rf").value,conv:$("convRate").value};
+  }else if(state.mode!=="apt"&&+$("landAsk").value){
+    payload={mode:state.mode,lawd:state.lawd,region:state.regionName,months:$("months").value,
+      dong:$("landDong").value,jimok:$("landJimok").value,use:$("landUse").value,
+      area:+$("landArea").value,ask:+$("landAsk").value,rf:$("rfLand").value};
+  }
+  if(!payload||!payload.lawd)return alert("먼저 분석을 실행해주세요. (데모 리포트는 공유할 수 없습니다)");
+  try{
+    const r=await fetch("/api/share",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const j=await r.json();
+    if(!j.id)throw 0;
+    const url=location.origin+"/share/"+j.id;
+    try{await navigator.clipboard.writeText(url);}catch{}
+    setStatus("ok","🔗 공유 링크가 클립보드에 복사되었습니다 — "+url);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch{alert("공유 링크 생성에 실패했습니다.");}
+}
+async function initShare(){
+  const m=location.pathname.match(/^\/share\/([a-z0-9]+)/i);
+  if(!m)return;
+  try{
+    const r=await fetch("/api/share?id="+m[1]);
+    const p=await r.json();
+    if(p.error)throw 0;
+    setMode(p.mode);
+    $("months").value=p.months||24;
+    state.selRegion={code:p.lawd,full:p.region||("법정동 "+p.lawd)};
+    $("bigAddr").value=p.region||"";
+    state.aptQuery="";
+    setStatus("load","🔗 공유된 리포트를 다시 생성하는 중... (최신 실거래 기준)");
+    await loadData();
+    if(p.mode==="apt"){
+      const c=complexes.find(x=>x.apt===p.apt&&x.dong===p.dong);
+      if(!c)return setStatus("err","공유된 단지를 현재 데이터에서 찾을 수 없습니다.");
+      pickComplex(p.apt,p.dong);
+      let best=null,bd=1e9;
+      [...$("areaChips").children].forEach(ch=>{const d=Math.abs(+ch.dataset.c-p.band);if(d<bd){bd=d;best=ch;}});
+      if(best)pickBand(best);
+      $("askPrice").value=p.ask;$("rf").value=p.rf||3;$("convRate").value=p.conv||6;
+      analyzeApt();
+    }else{
+      $("landDong").value=p.dong||"";$("landJimok").value=p.jimok||"";$("landUse").value=p.use||"";
+      $("landArea").value=p.area;$("landAsk").value=p.ask;$("rfLand").value=p.rf||3;
+      analyzeLand();
+    }
+  }catch{setStatus("err","공유 리포트를 찾을 수 없습니다.");}
+}
+
+/* ================= 데이터 로딩 ================= */
+function initRegion(){checkServer();initShare();}
+async function checkServer(){
+  const b=$("keyBadge");
+  try{
+    const r=await fetch("/api/status");const j=await r.json();
+    if(j.keyConfigured){b.textContent="🔐 실거래가 API 연결됨";b.style.background="#ECFDF5";b.style.color="#047857";}
+    else{b.textContent="⚠️ 서버 API 키 미설정 (데모만 가능)";b.style.background="#FFFBEB";b.style.color="#B45309";
+      setStatus("err","서버에 API 키가 없습니다. 서버 폴더의 config.json에 인증키를 입력한 뒤 페이지를 새로고침하세요. 데모 데이터 체험은 가능합니다.");}
+  }catch{b.textContent="⚠️ 서버 미실행 (데모만 가능)";b.style.background="#FEF2F2";b.style.color="#B91C1C";}
+}
+async function loadData(){
+  $("addrSuggest").style.display="none";
+  // 1) 법정동코드 직접 입력 우선
+  const man=$("lawdManual").value.trim();
+  let lawd=null;
+  if(/^\d{5}$/.test(man)){lawd=man;state.regionName=`법정동코드 ${man}`;state.aptQuery="";}
+  else{
+    // 2) 주소 한줄 → 지역 자동 해석 (내장 DB 우선)
+    const raw=$("bigAddr").value;
+    if(!state.selRegion){
+      const{cands}=matchRegion(raw);
+      if(cands.length){state.selRegion=cands[0].r;state.aptQuery=cands[0].left.join(" ");}
+    }
+    // 3) 실패 시 카카오 검색으로 자동 해석 (아파트명만 입력해도 동작)
+    if(!state.selRegion&&raw.trim().length>=2){
+      setStatus("load","🔎 주소 확인 중...");
+      try{
+        const g=await(await fetch("/api/geo?q="+encodeURIComponent(raw))).json();
+        const first=(g.items||[])[0];
+        if(first){
+          if(first.lawd){state.selRegion={code:first.lawd,full:first.region||first.addr};}
+          else{
+            const{cands}=matchRegion(first.region||first.addr||"");
+            if(cands.length)state.selRegion=cands[0].r;
+          }
+          if(state.selRegion)state.aptQuery=first.kind==="place"?cleanPlaceName(first.place):"";
+        }
+      }catch{}
+    }
+    if(!state.selRegion)return setStatus("err","지역을 찾지 못했습니다. 시/군/구를 포함해 입력해보세요 (예: 분당구 정자동, 일산 강선마을). 소규모 단지는 카카오 키 등록 시 더 정확히 검색됩니다.");
+    lawd=state.selRegion.code;state.regionName=state.selRegion.full;
+  }
+  state.lawd=lawd; // 공유 링크용
+  const months=$("months").value;
+  $("loadBtn").disabled=true;
+  const ep=state.mode==="apt"?"apt":state.mode==="land"?"land":"biz";
+  const epName=state.mode==="apt"?"아파트 매매·전월세":state.mode==="land"?"토지 매매":"상업·업무용 매매";
+  setStatus("load",`⏳ ${state.regionName} ${epName} 실거래가 조회 중... (최대 30초)`);
+  try{
+    const r=await fetch(`/api/${ep}?lawd=${lawd}&months=${months}`);
+    const j=await r.json();
+    if(j.error)throw new Error(j.error);
+    if(state.mode==="apt"){
+      state.trades=j.trades.map(normApt).filter(t=>t.amount>0&&!t.canceled);
+      state.rents=(j.rents||[]).map(normRent).filter(t=>t.deposit>0);
+      if(!state.trades.length)throw new Error("조회된 매매 거래가 없습니다. 지역/기간을 바꿔보세요.");
+      setStatus("ok",`✅ ${state.regionName} — 매매 ${state.trades.length.toLocaleString()}건 · 전월세 ${state.rents.length.toLocaleString()}건 로드 완료`);
+      buildComplexes();
+      // 단지명 입력 시: 최적 단지 자동 선택 → 최근 실거래가 자동 입력 → 리포트까지 원샷 생성
+      if(state.aptQuery){
+        const{hits,part}=findComplexHits(state.aptQuery);
+        $("aptFilter").value=hits.length?part:state.aptQuery;renderComplexList();
+        if(hits.length){
+          pickComplex(hits[0].apt,hits[0].dong); // 거래량 최다 단지 + 최다 면적타입 자동 선택
+          const comps=bandTrades(6)||bandTrades(12)||bandTrades(99);
+          if(comps&&comps.length){
+            $("askPrice").value=Math.round(median(comps.map(t=>t.amount)));
+            setStatus("ok",`✅ ${hits[0].apt} 자동 분석 — 매수가는 최근 실거래 중앙값 기준 (직접 수정 가능)`);
+            analyzeApt();
+            return;
+          }
+        }
+      }
+      setTimeout(()=>$("aptPicker").scrollIntoView({behavior:"smooth"}),300);
+    }else{
+      const arr=j.trades.map(state.mode==="biz"?normBiz:normLand).filter(t=>t.amount>0&&t.area>0);
+      if(!arr.length)throw new Error(`조회된 ${state.mode==="biz"?"상업·업무용":"토지"} 거래가 없습니다.`);
+      if(state.mode==="biz")state.biz=arr;else state.land=arr;
+      setStatus("ok",`✅ ${state.regionName} — ${state.mode==="biz"?"상업·업무용":"토지"} 매매 ${arr.length.toLocaleString()}건 로드 완료`);
+      buildLandFilters();
+      // 주소 뒤 동 이름으로 법정동 자동 선택
+      if(state.aptQuery){
+        const opt=[...$("landDong").options].find(o=>o.value&&state.aptQuery.includes(o.value));
+        if(opt)$("landDong").value=opt.value;
+      }
+      setTimeout(()=>$("landPicker").scrollIntoView({behavior:"smooth"}),300);
+    }
+  }catch(e){setStatus("err","❌ "+e.message);}
+  $("loadBtn").disabled=false;
+}
+
+function normApt(o){const amt=parseInt((o.dealAmount||"0").replace(/[^\d]/g,""))||0;
+  return{apt:(o.aptNm||o.aptName||"?").trim(),amount:amt,area:parseFloat(o.excluUseAr||o.excluUseAr1)||0,
+  dong:(o.umdNm||"").trim(),floor:+o.floor||0,built:+o.buildYear||0,canceled:(o.cdealType||"").trim()==="O",
+  date:new Date(+o.dealYear,(+o.dealMonth||1)-1,+o.dealDay||1)};}
+function normRent(o){return{apt:(o.aptNm||"?").trim(),deposit:parseInt((o.deposit||"0").replace(/[^\d]/g,""))||0,
+  monthly:parseInt((o.monthlyRent||"0").replace(/[^\d]/g,""))||0,area:parseFloat(o.excluUseAr)||0,
+  dong:(o.umdNm||"").trim(),date:new Date(+o.dealYear,(+o.dealMonth||1)-1,+o.dealDay||1)};}
+function normLand(o){return{amount:parseInt((o.dealAmount||"0").replace(/[^\d]/g,""))||0,
+  area:parseFloat(o.dealArea||o.dealarea)||0,jimok:(o.jimok||o.jimokNm||"기타").trim(),
+  use:(o.useArea||o.landUse||o.useAreaNm||"미상").trim()||"미상",dong:(o.umdNm||"").trim(),
+  share:(o.shareDealingType||o.dealingGbn||"").includes("지분"),
+  date:new Date(+o.dealYear,(+o.dealMonth||1)-1,+o.dealDay||1)};}
+/* 상업업무용: 건물면적 기준 ㎡당가, 주용도/유형으로 필터 */
+function normBiz(o){return{amount:parseInt((o.dealAmount||"0").replace(/[^\d]/g,""))||0,
+  area:parseFloat(o.buildingAr||o.totalFloorAr||o.plottageAr)||0,
+  jimok:(o.buildingUse||o.mainPurpsCdNm||"기타").trim()||"기타",
+  use:(o.buildingType||o.buildingGbn||"일반").trim()||"일반",dong:(o.umdNm||"").trim(),
+  share:(o.shareDealingType||o.dealingGbn||"").includes("지분"),
+  date:new Date(+o.dealYear,(+o.dealMonth||1)-1,+o.dealDay||1)};}
+
+/* ================= 데모 데이터 ================= */
+function loadDemo(){
+  state.regionName="데모 지역 (가상 데이터)";
+  const mkTrades=(apt,dong,base,areaTypes,drift,vol,nPerM)=>{const out=[];const now=new Date();
+    for(let mi=23;mi>=0;mi--){const t=(23-mi);const level=base*Math.exp(drift*t/12);
+      for(let k=0;k<nPerM;k++){if(Math.random()<0.3)continue;
+        const area=areaTypes[Math.floor(Math.random()*areaTypes.length)];
+        const noise=1+(Math.random()-0.5)*vol*2;
+        const d=new Date(now.getFullYear(),now.getMonth()-mi,1+Math.floor(Math.random()*27));
+        out.push({apt,dong,area,amount:Math.round(level*(area/84)*noise/100)*100,floor:2+Math.floor(Math.random()*20),built:2008,canceled:false,date:d});}}
+    return out;};
+  state.trades=[...mkTrades("한강뷰자이","호수동",132000,[59.9,74.8,84.9],0.055,0.04,7),
+                ...mkTrades("중앙역푸르지오","중앙동",95000,[59.8,84.9],0.012,0.05,9),
+                ...mkTrades("명당더샵리버파크","호수동",78000,[49.5,59.9],-0.03,0.06,5)];
+  state.rents=state.trades.filter(()=>Math.random()<0.8).map(t=>({apt:t.apt,dong:t.dong,area:t.area,
+    deposit:Math.round(t.amount*(0.52+Math.random()*0.12)/100)*100,monthly:Math.random()<0.25?Math.round(30+Math.random()*80):0,date:t.date}));
+  const jm=["전","답","임야","대"],use=["계획관리지역","생산관리지역","자연녹지지역","보전관리지역"];
+  state.land=Array.from({length:400},()=>{const dong=["문발동","산남동","오금동"][Math.floor(Math.random()*3)];
+    const u=use[Math.floor(Math.random()*use.length)];const j=jm[Math.floor(Math.random()*jm.length)];
+    const baseUnit={"계획관리지역":55,"생산관리지역":30,"자연녹지지역":45,"보전관리지역":18}[u]*(j==="대"?1.6:j==="임야"?0.5:1);
+    const mi=Math.floor(Math.random()*36);const now=new Date();
+    const area=200+Math.random()*3000;const unit=baseUnit*Math.exp(0.04*(36-mi)/36)*(0.7+Math.random()*0.6);
+    return{amount:Math.round(unit*area),area:Math.round(area),jimok:j,use:u,dong,share:Math.random()<0.08,
+      date:new Date(now.getFullYear(),now.getMonth()-mi,1+Math.floor(Math.random()*27))};});
+  // 상권(상업·업무용) 데모
+  const bizUse=["제1종근린생활","제2종근린생활","업무시설","판매시설","숙박시설"];
+  state.biz=Array.from({length:300},()=>{const dong=["역전동","중앙동","먹자골목"][Math.floor(Math.random()*3)];
+    const j=bizUse[Math.floor(Math.random()*bizUse.length)];
+    const baseUnit={"제1종근린생활":950,"제2종근린생활":820,"업무시설":700,"판매시설":1100,"숙박시설":520}[j];
+    const mi=Math.floor(Math.random()*36);const now=new Date();
+    const area=30+Math.random()*400;const unit=baseUnit*Math.exp(0.02*(36-mi)/36)*(0.65+Math.random()*0.7);
+    return{amount:Math.round(unit*area),area:Math.round(area),jimok:j,use:Math.random()<0.6?"집합":"일반",dong,share:false,
+      date:new Date(now.getFullYear(),now.getMonth()-mi,1+Math.floor(Math.random()*27))};});
+  setStatus("ok",`✅ 데모 데이터 로드 — 아파트 매매 ${state.trades.length}건 · 전월세 ${state.rents.length}건 · 토지 ${state.land.length}건`);
+  buildComplexes();buildLandFilters();
+  setTimeout(()=>$(state.mode==="apt"?"aptPicker":"landPicker").scrollIntoView({behavior:"smooth"}),300);
+}
+
+/* ================= 샘플 리포트 (실거래 데이터 · 고정 대상) ================= */
+async function sampleReport(kind){
+  setMode(kind);
+  let keyOk=false;
+  try{keyOk=(await(await fetch("/api/status")).json()).keyConfigured;}catch{}
+  if(!keyOk)return demoReport(kind); // 서버 키 없으면 가상 데모로 대체
+  $("lawdManual").value="";
+  if(kind==="apt"){
+    state.selRegion={code:"11650",full:"서울특별시 서초구"};state.aptQuery="원베일리";
+    $("bigAddr").value="래미안원베일리";
+    await loadData(); // 단지·면적·매수가 자동 → 리포트 원샷
+  }else{
+    if(kind==="land"){
+      state.selRegion={code:"11110",full:"서울특별시 종로구"};
+      $("bigAddr").value="종로구 청와대로 1 (청와대)";
+    }else{
+      state.selRegion={code:"11440",full:"서울특별시 마포구"};
+      $("bigAddr").value="마포구 서교동 · AK플라자 홍대";
+    }
+    state.aptQuery="";
+    await loadData();
+    const D=curLand();
+    if(!D.length)return;
+    const prefList=kind==="land"?["세종로","궁정동","효자동","청운동"]:["서교동","동교동"];
+    const pref=prefList.find(d=>[...$("landDong").options].some(o=>o.value===d));
+    if(pref)$("landDong").value=pref;
+    const set=D.filter(t=>!t.share&&(!pref||t.dong===pref));
+    const units=(set.length>=5?set:D.filter(t=>!t.share)).map(t=>t.amount/t.area);
+    $("landArea").value=kind==="land"?25000:300; // 청와대 부지 일부 2.5만㎡ / 상가 300㎡
+    $("landAsk").value=Math.round(median(units)*(+$("landArea").value));
+    analyzeLand();
+  }
+}
+
+/* ================= 데모 리포트 (키 없이 가상 데이터) ================= */
+function demoReport(kind){
+  setMode(kind);
+  loadDemo();
+  setMode(kind); // 데모 로드 후 표시 갱신
+  if(kind==="apt"){
+    pickComplex("한강뷰자이","호수동");
+    const comps=bandTrades(6)||bandTrades(12)||bandTrades(99);
+    if(comps&&comps.length)$("askPrice").value=Math.round(median(comps.map(t=>t.amount)));
+    analyzeApt();
+  }else{
+    const D=curLand();
+    const units=D.filter(t=>!t.share).map(t=>t.amount/t.area);
+    const area=kind==="biz"?300:1650;
+    $("landArea").value=area;
+    $("landAsk").value=Math.round(median(units)*area*1.05);
+    analyzeLand();
+  }
+}
+
+/* ================= 탭 (아파트/토지/상권) ================= */
+function setMode(m){state.mode=m;
+  $("tabApt").classList.toggle("on",m==="apt");
+  $("tabLand").classList.toggle("on",m==="land");
+  $("tabBiz").classList.toggle("on",m==="biz");
+  $("aptPicker").style.display=(m==="apt"&&state.trades.length)?"block":"none";
+  $("landPicker").style.display=(m!=="apt"&&curLand().length)?"block":"none";
+  $("reportApt").style.display=m==="apt"&&$("reportApt").dataset.ready?"block":"none";
+  $("reportLand").style.display=m!=="apt"&&$("reportLand").dataset.ready===m?"block":"none";
+  // 토지/상권 라벨 전환
+  const biz=m==="biz";
+  $("landPickTitle").textContent=biz?"🏪 분석 대상 상가·건물":"🌍 분석 대상 토지";
+  $("labJimok").textContent=biz?"건물 주용도":"지목";
+  $("labUse").textContent=biz?"유형 (일반/집합)":"용도지역";
+  if(m!=="apt"&&curLand().length)buildLandFilters();
+}
+
+/* ================= 아파트: 단지 목록 ================= */
+let complexes=[];
+function buildComplexes(){
+  const map=new Map();
+  for(const t of state.trades){const k=t.apt+"|"+t.dong;
+    if(!map.has(k))map.set(k,{apt:t.apt,dong:t.dong,trades:[]});map.get(k).trades.push(t);}
+  complexes=[...map.values()].sort((a,b)=>b.trades.length-a.trades.length);
+  $("aptCount").textContent=`— 단지 ${complexes.length}곳 · 거래 ${state.trades.length.toLocaleString()}건`;
+  $("aptPicker").style.display=state.mode==="apt"?"block":"none";
+  renderComplexList();
+}
+function renderComplexList(){
+  const q=$("aptFilter").value.trim();
+  const list=complexes.filter(c=>!q||c.apt.includes(q)||c.dong.includes(q)).slice(0,80);
+  $("complexList").innerHTML=list.map((c,i)=>{const last=c.trades.reduce((a,b)=>a.date>b.date?a:b);
+    return`<div class="list-item${state.complex===c?' sel':''}" onclick="pickComplex('${c.apt.replace(/'/g,"\\'")}','${c.dong}')">
+    <div><b>${c.apt}</b><br><small>${c.dong} · 거래 ${c.trades.length}건</small></div>
+    <div style="text-align:right"><b style="font-size:13px">${fmt(last.amount)}</b><br><small>최근 ${last.date.getFullYear()}.${last.date.getMonth()+1} · ${last.area}㎡</small></div></div>`;}).join("")||"<div style='padding:14px;font-size:13px;color:#94A3B8'>검색 결과 없음</div>";
+}
+function pickComplex(apt,dong){
+  state.complex=complexes.find(c=>c.apt===apt&&c.dong===dong);state.areaBand=null;
+  renderComplexList();
+  // 면적 클러스터
+  const areas=state.complex.trades.map(t=>t.area).sort((a,b)=>a-b);
+  const bands=[];for(const a of areas){const b=bands.find(x=>Math.abs(x.center-a)<=3);
+    if(b){b.n++;b.center=b.center+(a-b.center)/b.n;}else bands.push({center:a,n:1});}
+  bands.sort((a,b)=>a.center-b.center);
+  $("areaChips").innerHTML=bands.map((b,i)=>`<span class="chip" data-c="${b.center}" onclick="pickBand(this)">${b.center.toFixed(1)}㎡ (${b.n}건)</span>`).join("");
+  if(bands.length){
+    const bi=bands.reduce((m,b,i)=>b.n>bands[m].n?i:m,0); // 거래 최다 면적타입 기본 선택
+    pickBand($("areaChips").children[bi]);
+  }
+}
+function pickBand(el){[...$("areaChips").children].forEach(c=>c.classList.remove("on"));el.classList.add("on");
+  state.areaBand=+el.dataset.c;
+  const comps=bandTrades(6)||bandTrades(12)||bandTrades(99);
+  if(comps&&comps.length)$("askPrice").placeholder="참고: 최근 거래 "+fmt(median(comps.map(t=>t.amount)));}
+function bandTrades(monthsBack){const cut=new Date();cut.setMonth(cut.getMonth()-monthsBack);
+  const arr=state.complex.trades.filter(t=>Math.abs(t.area-state.areaBand)<=3&&t.date>=cut);
+  return arr.length>=3?arr:(monthsBack>=99?state.complex.trades.filter(t=>Math.abs(t.area-state.areaBand)<=3):null);}
+
+/* ================= 월스트리트 엔진 (공통) ================= */
+function monthlySeries(items,valueFn){ // -> [{ym,val,n}] 월별 중앙값
+  const g=new Map();
+  for(const it of items){const k=it.date.getFullYear()*12+it.date.getMonth();
+    if(!g.has(k))g.set(k,[]);g.get(k).push(valueFn(it));}
+  return[...g.entries()].sort((a,b)=>a[0]-b[0]).map(([k,v])=>({k,val:median(v),n:v.length}));
+}
+function trendVol(series){ // 연환산 추세/변동성/MDD/Sharpe용
+  if(series.length<6)return{trend:null,vol:null,mdd:null};
+  const xs=series.map(s=>s.k),ys=series.map(s=>Math.log(s.val));
+  const slope=ols(xs,ys);const trend=Math.exp(slope*12)-1;
+  const rets=[];for(let i=1;i<series.length;i++)rets.push(Math.log(series[i].val/series[i-1].val));
+  const vol=std(rets)!==null?std(rets)*Math.sqrt(12):null;
+  let peak=-Infinity,mdd=0;for(const s of series){peak=Math.max(peak,s.val);mdd=Math.max(mdd,(peak-s.val)/peak);}
+  return{trend,vol,mdd};
+}
+function ratingOf(score){return score>=80?["적극 매수","STRONG BUY"]:score>=65?["매수","BUY"]:score>=50?["중립 · 관망","HOLD"]:score>=35?["보류 · 비중축소","REDUCE"]:["회피","AVOID"];}
+function riskPill(level){return`<span class="pill ${level[1]}">${level[0]}</span>`;}
+function barsHTML(parts){return parts.map(([n,v,m])=>`<div class="bar-row"><span>${n}</span><div class="bar-track"><div class="bar-fill" style="width:${clamp(v/m*100,0,100)}%"></div></div><span style="text-align:right;font-weight:700">${v.toFixed(1)}/${m}</span></div>`).join("");}
+/* 위치 지도 (OSM 임베드, 키 불필요) */
+async function showMap(query,cardId,frameId){
+  try{
+    const r=await fetch("/api/coord?q="+encodeURIComponent(query));
+    const j=await r.json();
+    if(!j.lat){$(cardId).style.display="none";return;}
+    const d=0.006;
+    $(frameId).src=`https://www.openstreetmap.org/export/embed.html?bbox=${j.lon-d}%2C${j.lat-d}%2C${j.lon+d}%2C${j.lat+d}&layer=mapnik&marker=${j.lat}%2C${j.lon}`;
+    $(cardId).style.display="block";
+  }catch{$(cardId).style.display="none";}
+}
+/* 용도지역별 법정 상한 (국토계획법 시행령) */
+const ZONE_LIMITS=[["제1종전용주거",50,100],["제2종전용주거",50,150],["제1종일반주거",60,200],["제2종일반주거",60,250],["제3종일반주거",50,300],["준주거",70,500],["중심상업",90,1500],["일반상업",80,1300],["근린상업",70,900],["유통상업",80,1100],["전용공업",70,300],["일반공업",70,350],["준공업",70,400],["보전녹지",20,80],["생산녹지",20,100],["자연녹지",20,100],["보전관리",20,80],["생산관리",20,80],["계획관리",40,100],["농림",20,80],["자연환경보전",20,80]];
+function renderLandLaw(use,area){
+  const hit=use?ZONE_LIMITS.find(z=>use.replace(/\s/g,"").includes(z[0])):null;
+  if(!hit||!area){$("lLawCard").style.display="none";return;}
+  const[nm,bcr,far]=hit;
+  $("lLaw").innerHTML=`
+    <div class="item"><small>용도지역</small><b>${use}</b></div>
+    <div class="item"><small>건폐율 상한</small><b>${bcr}% 이하</b></div>
+    <div class="item"><small>용적률 상한</small><b>${far}% 이하</b></div>
+    <div class="item"><small>예상 건축면적(바닥)</small><b>${Math.round(area*bcr/100).toLocaleString()}㎡</b></div>
+    <div class="item"><small>예상 연면적(최대)</small><b>${Math.round(area*far/100).toLocaleString()}㎡</b></div>`;
+  $("lLawCard").style.display="block";
+}
+/* 템플릿 스타일 리스크 카드 */
+function riskCardsHTML(list){
+  const cls={"최고":"high","높음":"high","중간":"mid","낮음":"low"};
+  return list.map(r=>`<div class="rk">
+    <div class="rk-h"><span class="pill ${cls[r.lv]}">${r.lv}</span><b>${r.t}</b><small>발생확률: ${r.prob}</small></div>
+    <p>${r.d}</p>
+    <div class="rk-act">💡 대응 방안: ${r.act}</div></div>`).join("");
+}
+function drawChart(id,cfg){if(state.charts[id])state.charts[id].destroy();state.charts[id]=new Chart($(id),cfg);}
+/* OpenAI 애널리스트 코멘트: 룰 기반 코멘트를 먼저 보여주고, GPT 응답이 오면 교체 */
+let aiSeq=0;
+async function requestAI(kind,data,commentId){
+  const el=$(commentId);
+  const noteId=commentId+"Note";
+  let note=$(noteId);
+  if(!note){note=document.createElement("div");note.id=noteId;
+    note.style.cssText="margin-top:9px;font-size:12px;color:#93C5FD;font-weight:600";
+    el.parentElement.appendChild(note);}
+  note.textContent="🤖 OpenAI 애널리스트 코멘트 생성 중...";
+  const seq=++aiSeq;
+  try{
+    const r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,data})});
+    const j=await r.json();
+    if(seq!==aiSeq)return;
+    if(j.noKey){note.textContent="💡 config.json에 openaiKey를 넣으면 GPT가 작성한 상세 코멘트가 제공됩니다. (지금은 룰 기반 요약)";return;}
+    if(j.error||!j.text){note.textContent="⚠️ AI 코멘트 생성 실패: "+(j.error||"응답 없음")+" — 룰 기반 요약을 표시합니다.";return;}
+    el.textContent=j.text;
+    note.textContent="🤖 OpenAI(gpt-4o-mini) 작성 코멘트 · 참고용";
+  }catch{note.textContent="⚠️ AI 서버 연결 실패 — 룰 기반 요약을 표시합니다.";}
+}
+
+/* ================= 주변 단지 비교 ================= */
+function renderPeers(c,band){
+  const cut=new Date();cut.setMonth(cut.getMonth()-12);
+  const rows=[c,...complexes.filter(x=>x.dong===c.dong&&x!==c).slice(0,5)].map(x=>{
+    const bt=x.trades.filter(t=>Math.abs(t.area-band)<=band*0.2&&t.date>=cut);
+    if(bt.length<2)return null;
+    const med=median(bt.map(t=>t.amount));
+    const unit=median(bt.map(t=>t.amount/t.area));
+    const rents=state.rents.filter(r=>r.apt===x.apt&&Math.abs(r.area-band)<=band*0.2&&r.monthly===0);
+    const jr=rents.length>=3?median(rents.map(r=>r.deposit))/med:null;
+    const tv=trendVol(monthlySeries(bt,t=>t.amount/t.area));
+    return{name:x.apt,n:bt.length,med,unit,jr,trend:tv.trend,self:x===c};
+  }).filter(Boolean);
+  $("aPeers").innerHTML=rows.map(r=>`<tr style="${r.self?'background:var(--light);font-weight:700':''}">
+    <td>${r.self?'⭐ ':''}${r.name}</td><td>${r.n}건</td><td>${fmt(r.med)}</td><td>${r.unit.toFixed(0)}만/㎡</td>
+    <td>${r.jr!==null?pct(r.jr):'-'}</td>
+    <td style="color:${r.trend>0?'var(--green)':r.trend<0?'var(--red)':'inherit'};font-weight:700">${r.trend==null?'-':(r.trend>=0?'+':'')+pct(r.trend)}</td></tr>`).join("")
+    ||`<tr><td colspan="6" style="text-align:center;color:#94A3B8">비교 가능한 주변 단지가 부족합니다</td></tr>`;
+  $("aPeersNote").textContent=`기준: ${c.dong} 내 거래량 상위 단지 · 유사 면적(±20%) · 최근 12개월 실거래`;
+  return rows;
+}
+
+/* ================= 아파트 분석 ================= */
+function analyzeApt(){
+  if(!state.complex||!state.areaBand)return alert("단지와 면적 타입을 선택해주세요.");
+  const ask=+$("askPrice").value;if(!ask)return alert("매수 예정가(호가)를 입력해주세요.");
+  const rf=(+$("rf").value||3)/100,conv=(+$("convRate").value||6)/100;
+  const c=state.complex,band=state.areaBand;
+  const inBand=t=>Math.abs(t.area-band)<=3;
+
+  /* --- 1) Comps 상대가치 --- */
+  let compsWin=6,comps=null;
+  for(const w of[6,12,999]){const cut=new Date();cut.setMonth(cut.getMonth()-w);
+    const arr=c.trades.filter(t=>inBand(t)&&t.date>=cut);
+    if(arr.length>=3||w===999){comps=arr;compsWin=w;break;}}
+  let compsFair=null,compsSrc="";
+  if(comps&&comps.length){compsFair=median(comps.map(t=>t.amount));
+    compsSrc=`동일 단지 ±3㎡ · 최근 ${compsWin===999?"전체 기간":compsWin+"개월"} ${comps.length}건 중앙값`;}
+  else{ // 동 단위 ㎡당가 폴백
+    const dongArr=state.trades.filter(t=>t.dong===c.dong&&Math.abs(t.area-band)<=band*0.2);
+    if(dongArr.length>=5){compsFair=median(dongArr.map(t=>t.amount/t.area))*band;compsSrc=`${c.dong} 유사면적 ㎡당가 ${dongArr.length}건 기반 추정`;}}
+  const premium=compsFair?ask/compsFair-1:null;
+
+  /* --- 2) Income Approach --- */
+  const rents=state.rents.filter(r=>r.apt===c.apt&&Math.abs(r.area-band)<=3);
+  const jeonseArr=rents.filter(r=>r.monthly===0).map(r=>r.deposit);
+  const jeonseEst=jeonseArr.length?median(jeonseArr):null;
+  let noi=null,grossYield=null,incomeValue=null;
+  if(rents.length>=3){noi=median(rents.map(r=>r.monthly*12+r.deposit*conv));
+    grossYield=noi/ask; incomeValue=noi/(rf+0.015);}
+
+  /* --- 3) Technicals: 동일 단지 우선, 부족 시 동 단위 ㎡당가 시계열 --- */
+  const ownBand=c.trades.filter(inBand);
+  const dongBand=state.trades.filter(t=>t.dong===c.dong&&Math.abs(t.area-band)<=band*0.25);
+  const seriesSrc=ownBand.length>=24?ownBand:(dongBand.length>=30?dongBand:state.trades);
+  const series=monthlySeries(seriesSrc,t=>t.amount/t.area);
+  const{trend,vol,mdd}=trendVol(series);
+  const sharpe=(trend!==null&&vol)?(trend-rf)/vol:null;
+
+  /* --- 4) 유동성 --- */
+  const bandAll=c.trades.filter(inBand);
+  const monthsSpan=Math.max(1,(bandAll.length?((Math.max(...bandAll.map(t=>+t.date))-Math.min(...bandAll.map(t=>+t.date)))/2592000000):1));
+  const perMonth=bandAll.length/Math.max(monthsSpan,1);
+
+  /* --- 5) 목표가 & 스코어 --- */
+  const target=compsFair&&incomeValue?compsFair*0.7+incomeValue*0.3:(compsFair||incomeValue||ask);
+  const upside=target/ask-1;
+  const sVal=premium===null?17.5:35*clamp((0.10-premium)/0.20,0,1);
+  const sInc=grossYield===null?7.5:15*clamp((grossYield-rf+0.01)/0.03,0,1);
+  const sMom=trend===null?7.5:15*clamp((trend+0.05)/0.12,0,1);
+  let sRisk=vol===null?10:20*clamp((0.12-vol)/0.10,0,1);if(mdd&&mdd>0.2)sRisk=Math.max(0,sRisk-5);
+  const sLiq=15*clamp(perMonth/3,0.15,1);
+  const score=Math.round(sVal+sInc+sMom+sRisk+sLiq);
+  const[rateKo,rateEn]=ratingOf(score);
+
+  /* --- 6) 시나리오 IRR --- */
+  const jeonse=jeonseEst||Math.round(ask*0.55);
+  const equity=Math.max(ask-jeonse,ask*0.2);
+  const base=trend===null?0.02:clamp(trend,-0.02,0.06);
+  const scen=[["🐻 약세",Math.min(base,0)-0.04],["📊 기준",base],["🐂 강세",base+0.05]];
+  $("aScenario").innerHTML=scen.map(([n,r])=>{const sell=ask*Math.pow(1+r,3);const exitEq=sell-jeonse;
+    const irr=exitEq>0?Math.pow(exitEq/equity,1/3)-1:-1;
+    return`<tr><td>${n}</td><td>${(r*100).toFixed(1)}%/년</td><td>${fmt(sell)}</td><td>${fmt(equity)}</td>
+    <td style="font-weight:700;color:${irr>=0?'var(--green)':'var(--red)'}">${(irr*100).toFixed(1)}%</td></tr>`;}).join("");
+
+  /* --- 렌더 (PDF 템플릿 스타일) --- */
+  $("reportApt").dataset.ready="1";$("reportApt").style.display="block";
+  $("aptTitle").textContent=`${c.apt} ${band.toFixed(0)}㎡`;
+  $("aRepMeta").textContent=`분석 일시: ${new Date().toLocaleString("ko-KR")} | ${state.regionName} ${c.dong} | 명당연구소 v1.0`;
+  $("aScoreNum").textContent=score;
+  const gcol=score>=65?"var(--green)":score>=50?"var(--orange)":"var(--red)";
+  $("aGauge").style.width=score+"%";$("aGauge").style.background=gcol;
+  $("aScoreCard").className="sc5 score"+(score>=65?" good":score>=50?" mid":"");
+  $("aRating").textContent=rateEn;$("aGradeKo").textContent=rateKo;
+  $("aCardAsk").textContent=fmt(ask);$("aCardUnit").textContent=(ask/band).toFixed(0)+"만/㎡";
+  $("aCardTarget").textContent=fmt(target);
+  $("aCardUp").textContent="상승여력 "+(upside>=0?"+":"")+pct(upside);
+  $("aCardUp").style.color=upside>=0?"var(--green)":"var(--red)";
+  $("aCardJeonse").textContent=jeonseEst?fmt(jeonseEst):"추정 "+fmt(jeonse);
+  $("aCardGap").textContent="갭(자기자본) "+fmt(equity);
+  $("aVerdictLine").textContent=`${rateKo} — ${premium===null?"비교 거래 부족으로 신뢰도 낮음":premium>0.05?"최근 실거래 대비 높은 호가, 가격 협상 필요":premium<-0.05?"실거래 대비 저평가 구간":"실거래와 유사한 적정 가격"}, 전세가율 ${(jeonse/ask*100).toFixed(0)}% · 갭 ${fmt(equity)}`;
+
+  $("aComps").innerHTML=`
+    <div class="item"><small>Comps 적정가</small><b>${compsFair?fmt(compsFair):"데이터 부족"}</b></div>
+    <div class="item"><small>호가 프리미엄</small><b style="color:${premium>0.03?'var(--red)':premium<-0.03?'var(--green)':'#0F172A'}">${premium===null?"-":(premium>=0?"+":"")+pct(premium)}</b></div>
+    <div class="item"><small>비교 거래 수</small><b>${comps?comps.length+"건":"0건"}</b></div>
+    <div class="item"><small>㎡당 호가</small><b>${(ask/band).toFixed(0)}만/㎡</b></div>`;
+  $("aCompsNote").textContent="기준: "+(compsSrc||"비교 거래 부족 — 신뢰도 낮음");
+
+  $("aIncome").innerHTML=`
+    <div class="item"><small>연 환산 임대수익 (NOI)</small><b>${noi?fmt(noi):"-"}</b></div>
+    <div class="item"><small>임대수익률 (Cap Rate)</small><b>${grossYield?pct(grossYield):"-"}</b></div>
+    <div class="item"><small>요구수익률 (rf+150bp)</small><b>${pct(rf+0.015)}</b></div>
+    <div class="item"><small>수익가치 (DCF)</small><b>${incomeValue?fmt(incomeValue):"-"}</b></div>`;
+  $("aIncomeNote").textContent=rents.length>=3?`동일 단지 유사면적 전월세 ${rents.length}건 · 전환율 ${(conv*100).toFixed(1)}% 적용`:"전월세 데이터 부족 — 수익가치 평가 생략";
+
+  $("aTech").innerHTML=`
+    <div class="item"><small>가격 모멘텀 (연환산)</small><b style="color:${trend>0?'var(--green)':'var(--red)'}">${trend===null?"-":(trend>=0?"+":"")+pct(trend)}</b></div>
+    <div class="item"><small>변동성 (연환산 σ)</small><b>${vol===null?"-":pct(vol)}</b></div>
+    <div class="item"><small>Sharpe Ratio</small><b>${sharpe===null?"-":sharpe.toFixed(2)}</b></div>
+    <div class="item"><small>최대 낙폭 (MDD)</small><b>${mdd===null?"-":"-"+pct(mdd)}</b></div>`;
+  $("aLiq").innerHTML=`
+    <div class="item"><small>월평균 거래 (해당 타입)</small><b>${perMonth.toFixed(1)}건</b></div>
+    <div class="item"><small>환금성 평가</small>${riskPill(perMonth>=2?["양호","low"]:perMonth>=0.7?["보통","mid"]:["낮음","high"])}</div>`;
+
+  $("aBars").innerHTML=barsHTML([["📊 상대가치 (Comps)",sVal,35],["💵 수익가치 (Income)",sInc,15],["📈 모멘텀",sMom,15],["🛡️ 리스크 (변동성·MDD)",sRisk,20],["🔁 유동성",sLiq,15]]);
+
+  /* AI 코멘트 */
+  let cm=`${c.apt} ${band.toFixed(0)}㎡의 호가 ${fmt(ask)}은(는) `;
+  cm+=premium===null?"비교 거래가 부족해 상대가치 판단의 신뢰도가 낮습니다. ":
+    premium>0.05?`동일 단지 최근 실거래 대비 ${pct(premium)} 높은 수준입니다. `:
+    premium<-0.05?`최근 실거래 대비 ${pct(-premium)} 낮아 가격 메리트가 있습니다. `:"최근 실거래와 유사한 적정 수준입니다. ";
+  if(grossYield!==null)cm+=`임대수익률 ${pct(grossYield)}는 요구수익률(${pct(rf+0.015)}) ${grossYield>rf+0.015?"을 상회해 수익가치 측면에서 긍정적":"에 미달해 시세차익 의존도가 높음"}입니다. `;
+  if(trend!==null)cm+=`지역 가격 모멘텀은 연 ${(trend*100).toFixed(1)}%${trend>0?" 상승":" 하락"} 추세이며, 변동성 대비 성과(Sharpe ${sharpe?sharpe.toFixed(2):"-"})는 ${sharpe>0.5?"우수":sharpe>0?"보통":"부진"}합니다. `;
+  cm+=`종합적으로 적정가 ${fmt(target)} ${upside<-0.03?"대비 고평가 구간으로 가격 조정 시 재검토":upside>0.03?"대비 저평가 구간으로 매수 관점 유효":"수준의 적정 가격"}입니다.`;
+  $("aComment").textContent=cm;
+
+  /* 리스크 카드 (템플릿 스타일) */
+  const ratioNow=jeonse/ask*100;
+  const cash=Math.round(jeonse*0.07/100)*100; // 권장 예비 현금(전세가의 약 7%)
+  $("aRiskCards").innerHTML=riskCardsHTML([
+    {lv:ratioNow>80?"최고":ratioNow>70?"높음":"낮음",t:"전세(역전세) 리스크",prob:ratioNow>75?"높음":"보통",
+     d:`전세가율 ${ratioNow.toFixed(0)}% 수준입니다. 전세 시세가 하락하면 계약 갱신 시 보증금 차액 반환 부담이 발생할 수 있습니다.`,
+     act:`최소 ${fmt(cash)} 내외의 예비 현금을 확보하고, 주변 입주 물량 일정을 사전에 확인하세요.`},
+    {lv:vol!==null&&vol>0.3?"높음":vol!==null&&vol>0.15?"중간":"낮음",t:"가격 변동성 리스크",prob:vol!==null&&vol>0.3?"높음":"보통",
+     d:`연환산 변동성 ${vol===null?"측정 불가":pct(vol)}, 최대 낙폭(MDD) ${mdd===null?"-":"-"+pct(mdd)}입니다. 단기 가격 조정 가능성을 감안해야 합니다.`,
+     act:"단기 매도 계획이라면 진입 시점을 분산하고, 3년 이상 보유 전제로 접근하세요."},
+    {lv:premium!==null&&premium>0.05?"높음":"낮음",t:"고평가(호가 프리미엄) 리스크",prob:premium!==null&&premium>0.05?"높음":"낮음",
+     d:premium===null?"비교 거래가 부족해 적정가 판단 신뢰도가 낮습니다.":`호가가 최근 실거래 대비 ${(premium>=0?"+":"")+pct(premium)} 수준입니다.`,
+     act:`추천 매수가 ${fmt(target)} 이하로 협상하거나, 실거래가 추가 확인 후 진입하세요.`},
+    {lv:perMonth<0.7?"높음":perMonth<2?"중간":"낮음",t:"유동성(환금성) 리스크",prob:perMonth<0.7?"높음":"보통",
+     d:`해당 면적 타입의 월평균 거래는 ${perMonth.toFixed(1)}건입니다. 급매 시 호가 대비 할인 폭이 커질 수 있습니다.`,
+     act:"매도 시 충분한 기간(3~6개월)을 확보하고, 시세보다 과도한 호가 책정을 피하세요."}
+  ]);
+  $("aFinal").textContent=rateKo;
+  $("aFinalTxt").textContent=upside>0?`목표가 ${fmt(target)}까지 ${pct(upside)}의 상승여력이 있습니다. ${fmt(Math.min(ask,target))} 이하 매수를 권고합니다.`:`적정가는 ${fmt(target)}으로 호가 대비 ${pct(-upside)} 낮습니다. ${fmt(target)} 이하로 협상하거나 관망을 권고합니다.`;
+  $("discApt").innerHTML=discText();
+
+  /* 위치 지도 */
+  showMap(`${state.regionName} ${c.dong} ${c.apt}`,"aMapCard","aMap");
+
+  /* 주변 단지 비교 */
+  const peerRows=renderPeers(c,band);
+  const peerSummary=peerRows.filter(r=>!r.self).slice(0,4)
+    .map(r=>`${r.name} ${r.unit.toFixed(0)}만/㎡${r.jr!==null?` 전세가율 ${pct(r.jr,0)}`:""}`).join(" · ")||null;
+
+  /* OpenAI 상세 코멘트 (포맷된 값 전달 — 단위 오변환 방지) */
+  const sign=x=>x==null?null:(x>=0?"+":"")+pct(x);
+  requestAI("apt",{
+    단지:c.apt, 법정동:c.dong, 전용면적:`${band.toFixed(0)}㎡`, 매수예정가:fmt(ask),
+    Comps_적정가:compsFair?fmt(compsFair):null, Comps_기준:compsSrc, 호가_프리미엄:sign(premium),
+    전세시세:jeonseEst?fmt(jeonseEst):null, 갭_자기자본:fmt(equity),
+    연임대수익_NOI:noi?fmt(noi):null, 임대수익률:grossYield?pct(grossYield):null,
+    요구수익률:pct(rf+0.015), 수익가치:incomeValue?fmt(incomeValue):null,
+    가격모멘텀_연환산:sign(trend), 변동성_연환산:vol==null?null:pct(vol),
+    Sharpe:sharpe==null?null:+sharpe.toFixed(2), 최대낙폭_MDD:mdd==null?null:"-"+pct(mdd),
+    월평균거래건수:+perMonth.toFixed(1), 종합점수:score, 등급:rateEn,
+    목표가:fmt(target), 상승여력:sign(upside),
+    대상단지_m2당가:`${(ask/band).toFixed(0)}만/㎡`,
+    주변단지_비교:peerSummary
+  },"aComment");
+
+  /* 차트 */
+  const scat=c.trades.filter(inBand).map(t=>({x:+t.date,y:t.amount}));
+  const line=monthlySeries(c.trades.filter(inBand),t=>t.amount).map(s=>({x:new Date(Math.floor(s.k/12),s.k%12,15).getTime(),y:s.val}));
+  drawChart("priceChart",{type:"scatter",data:{datasets:[
+    {label:"실거래",data:scat,backgroundColor:"rgba(37,99,235,.45)",pointRadius:4},
+    {label:"월별 중앙값",data:line,type:"line",borderColor:"#1E3A8A",borderWidth:2,pointRadius:0,tension:.3},
+    {label:"호가",data:scat.length?[{x:Math.min(...scat.map(p=>p.x)),y:ask},{x:Date.now(),y:ask}]:[],type:"line",borderColor:"#EF4444",borderDash:[6,4],borderWidth:1.5,pointRadius:0},
+    {label:"적정가",data:scat.length?[{x:Math.min(...scat.map(p=>p.x)),y:target},{x:Date.now(),y:target}]:[],type:"line",borderColor:"#10B981",borderDash:[6,4],borderWidth:1.5,pointRadius:0}]},
+    options:chartOpts("만원")});
+  const volSeries=monthlySeries(c.trades.filter(inBand),t=>1);
+  drawChart("volChart",{type:"bar",data:{labels:volSeries.map(s=>`${Math.floor(s.k/12)}.${s.k%12+1}`),
+    datasets:[{label:"월 거래량",data:volSeries.map(s=>s.n),backgroundColor:"rgba(37,99,235,.5)"}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  $("reportApt").scrollIntoView({behavior:"smooth"});
+}
+
+function chartOpts(unit){return{responsive:true,maintainAspectRatio:false,
+  scales:{x:{type:"linear",ticks:{callback:v=>{const d=new Date(v);return d.getFullYear()+"."+(d.getMonth()+1);},maxTicksLimit:8}},
+  y:{ticks:{callback:v=>v.toLocaleString()}}},
+  plugins:{legend:{labels:{boxWidth:12,font:{size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${Math.round(c.parsed.y).toLocaleString()}${unit}`}}}};}
+
+function discText(){return`⚠️ 본 리포트는 국토교통부 실거래가 공개시스템 데이터와 사용자가 입력한 정보를 기반으로 자동 생성된 <b>참고용 분석 자료</b>입니다. 투자 수익을 보장하지 않으며, 투자 판단의 최종 책임은 투자자 본인에게 있습니다. 실제 투자 전 전문가 상담, 현장 확인, 권리분석이 필요합니다. (분석 기준일: ${new Date().toISOString().slice(0,10)} · 기준지역: ${state.regionName})`;}
+
+/* ================= 토지 분석 ================= */
+function buildLandFilters(){
+  const D=curLand();
+  $("landPicker").style.display=(state.mode!=="apt"&&D.length)?"block":"none";
+  if(!D.length)return;
+  $("landCount").textContent=`— 거래 ${D.length.toLocaleString()}건 로드됨`;
+  const opts=(arr,label)=>`<option value="">${label} 전체</option>`+[...new Set(arr)].sort().map(v=>`<option>${v}</option>`).join("");
+  $("landDong").innerHTML=opts(D.map(t=>t.dong).filter(Boolean),"법정동");
+  $("landJimok").innerHTML=opts(D.map(t=>t.jimok).filter(Boolean),state.mode==="biz"?"주용도":"지목");
+  $("landUse").innerHTML=opts(D.map(t=>t.use).filter(Boolean),state.mode==="biz"?"유형":"용도지역");
+}
+function analyzeLand(){
+  const area=+$("landArea").value,ask=+$("landAsk").value;
+  if(!area||!ask)return alert("대상 면적과 호가를 입력해주세요.");
+  const rf=(+$("rfLand").value||3)/100;
+  const dong=$("landDong").value,jimok=$("landJimok").value,use=$("landUse").value;
+  const askUnit=ask/area; // 만원/㎡
+
+  /* Comps: 조건 좁힘 → 부족 시 완화 */
+  const base=curLand().filter(t=>!t.share);
+  const tiers=[t=>(!dong||t.dong===dong)&&(!jimok||t.jimok===jimok)&&(!use||t.use===use),
+               t=>(!jimok||t.jimok===jimok)&&(!use||t.use===use),
+               t=>(!use||t.use===use), t=>true];
+  let comps=[],tierDesc="";
+  for(let i=0;i<tiers.length;i++){const cut=new Date();cut.setMonth(cut.getMonth()-18);
+    comps=base.filter(t=>tiers[i](t)&&t.date>=cut);
+    if(comps.length>=8){tierDesc=["동·지목·용도 일치","지목·용도 일치","용도지역 일치","지역 전체"][i];break;}}
+  if(comps.length<3){comps=base;tierDesc="지역 전체(전 기간)";}
+  const units=comps.map(t=>t.amount/t.area);
+  const fairUnit=median(units),fair=fairUnit*area;
+  const premium=ask/fair-1;
+  const pctile=percentile(units,askUnit);
+
+  /* 추세/변동성 */
+  const trendSet=base.filter(t=>tiers[2](t));
+  const series=monthlySeries(trendSet.length>=40?trendSet:base,t=>t.amount/t.area);
+  const{trend,vol,mdd}=trendVol(series);
+  const sharpe=(trend!==null&&vol)?(trend-rf)/vol:null;
+
+  /* 유동성 */
+  const span=series.length||1, perMonth=comps.length/18;
+
+  /* 스코어: 상대가치45 모멘텀20 리스크15 유동성20 */
+  const sVal=45*clamp((0.15-premium)/0.35,0,1);
+  const sMom=trend===null?10:20*clamp((trend+0.05)/0.15,0,1);
+  const sRisk=vol===null?7.5:15*clamp((0.25-vol)/0.22,0,1);
+  const sLiq=20*clamp(perMonth/2,0.1,1);
+  const score=Math.round(sVal+sMom+sRisk+sLiq);
+  const[rateKo,rateEn]=ratingOf(score);
+  const target=fair;
+
+  const biz=state.mode==="biz";
+  $("reportLand").dataset.ready=state.mode;$("reportLand").style.display="block";
+  $("lRepLabel").textContent=biz?"📄 AI 상권(상업·업무용) 분석 리포트":"📄 AI 토지 분석 리포트";
+  $("lRepMeta").textContent=`분석 일시: ${new Date().toLocaleString("ko-KR")} | ${state.regionName} | 명당연구소 v1.0`;
+  $("lTitle").textContent=`${dong||state.regionName}${jimok?" · "+jimok:""}${use?" · "+use:""}`;
+  $("lScoreNum").textContent=score;
+  const lgcol=score>=65?"var(--green)":score>=50?"var(--orange)":"var(--red)";
+  $("lGauge").style.width=score+"%";$("lGauge").style.background=lgcol;
+  $("lScoreCard").className="sc5 score"+(score>=65?" good":score>=50?" mid":"");
+  $("lRating").textContent=rateEn;$("lGradeKo").textContent=rateKo;
+  $("lCardAsk").textContent=fmt(ask);
+  $("lCardUnit").textContent=`${askUnit.toFixed(1)}만/㎡ · 평당 ${(askUnit*3.3058).toFixed(0)}만`;
+  $("lCardTarget").textContent=fmt(target);
+  $("lCardPrem").textContent="프리미엄 "+(premium>=0?"+":"")+pct(premium);
+  $("lCardPrem").style.color=premium>0.05?"var(--red)":premium<-0.05?"var(--green)":"#94A3B8";
+  $("lCardPct").textContent=`${(pctile*100).toFixed(0)} 백분위`;
+  $("lCardN").textContent=`유사 거래 ${comps.length}건 기준`;
+  $("lVerdictLine").textContent=`${rateKo} — ㎡당 호가가 유사 거래 중앙값 대비 ${(premium>=0?"+":"")+pct(premium)}, 지역 분포 ${(pctile*100).toFixed(0)} 백분위${perMonth<0.5?", 거래 빈도 낮아 환금성 주의":""}`;
+  $("lComps").innerHTML=`
+    <div class="item"><small>㎡당 적정가 (중앙값)</small><b>${fairUnit.toFixed(1)}만/㎡</b></div>
+    <div class="item"><small>비교 거래 수</small><b>${comps.length}건</b></div>
+    <div class="item"><small>분포 내 위치</small><b>${(pctile*100).toFixed(0)} 백분위</b></div>
+    <div class="item"><small>지분거래 제외</small><b>적용</b></div>`;
+  $("lCompsNote").textContent=`기준: ${tierDesc} · 최근 18개월 거래 중앙값 (지분거래 제외)`;
+  $("lTech").innerHTML=`
+    <div class="item"><small>㎡당가 모멘텀 (연환산)</small><b style="color:${trend>0?'var(--green)':'var(--red)'}">${trend===null?"-":(trend>=0?"+":"")+pct(trend)}</b></div>
+    <div class="item"><small>변동성 (연환산 σ)</small><b>${vol===null?"-":pct(vol)}</b></div>
+    <div class="item"><small>Sharpe Ratio</small><b>${sharpe===null?"-":sharpe.toFixed(2)}</b></div>
+    <div class="item"><small>월평균 유사거래</small><b>${perMonth.toFixed(1)}건 ${perMonth<0.5?"(환금성 주의)":""}</b></div>`;
+  const recent=[...comps].sort((a,b)=>b.date-a.date).slice(0,10);
+  $("lCompsTable").innerHTML=recent.map(t=>`<tr><td>${t.date.getFullYear()}.${String(t.date.getMonth()+1).padStart(2,"0")}</td><td>${t.dong}</td><td>${t.jimok}</td><td>${t.use}</td><td>${t.area.toLocaleString()}</td><td>${t.amount.toLocaleString()}</td><td>${(t.amount/t.area).toFixed(1)}</td></tr>`).join("");
+  $("lBars").innerHTML=barsHTML([["📊 상대가치 (Comps)",sVal,45],["📈 모멘텀",sMom,20],["🛡️ 리스크 (변동성)",sRisk,15],["🔁 유동성",sLiq,20]]);
+
+  let cm=`대상의 ㎡당 호가 ${askUnit.toFixed(1)}만원은 유사 거래(${tierDesc}, ${comps.length}건) 중앙값 ${fairUnit.toFixed(1)}만원 대비 ${(premium>=0?"+":"")+pct(premium)} 수준으로, 지역 분포에서 ${(pctile*100).toFixed(0)} 백분위에 위치합니다. `;
+  if(trend!==null)cm+=`해당 지역 ㎡당가는 연 ${(trend*100).toFixed(1)}% ${trend>0?"상승":"하락"} 추세입니다. `;
+  cm+=perMonth<0.5?"거래 빈도가 낮아 환금성 리스크가 커 장기 보유 전제로 접근해야 합니다. ":"거래가 꾸준해 환금성은 무난한 수준입니다. ";
+  cm+=biz
+    ?"상가·건물은 임차 업종, 공실률, 권리금에 따라 수익이 크게 달라지므로 현장 임장과 임대차 현황 확인이 필수입니다."
+    :"토지는 용도지역·접도·개발행위허가에 따라 가치가 크게 달라지므로 토지이용계획확인원과 현장 확인이 필수입니다.";
+  $("lComment").textContent=cm;
+
+  /* 위치 지도 + 법규 검토(토지만) */
+  showMap(`${state.regionName} ${dong||""}`.trim(),"lMapCard","lMap");
+  if(!biz)renderLandLaw(use||[...new Set(comps.map(t=>t.use))][0]||"",area);
+  else $("lLawCard").style.display="none";
+
+  /* 리스크 카드 */
+  $("lRiskCards").innerHTML=riskCardsHTML([
+    {lv:premium>0.15?"최고":premium>0.05?"높음":"낮음",t:"고평가 리스크",prob:premium>0.05?"높음":"낮음",
+     d:`㎡당 호가가 유사 거래 중앙값 대비 ${(premium>=0?"+":"")+pct(premium)}, 분포상 ${(pctile*100).toFixed(0)} 백분위입니다.`,
+     act:`적정가 ${fmt(target)} 이하로 협상하거나, 인근 실거래 사례를 추가 확인 후 진입하세요.`},
+    {lv:perMonth<0.5?"최고":perMonth<1.5?"높음":"낮음",t:"환금성 리스크",prob:perMonth<0.5?"높음":"보통",
+     d:`유사 조건 거래가 월평균 ${perMonth.toFixed(1)}건입니다. ${perMonth<0.5?"매각까지 장기간이 소요될 수 있습니다.":"거래 흐름은 유지되고 있습니다."}`,
+     act:"장기 보유를 전제로 하고, 매각 시점에 급매 할인 여지를 사전에 반영하세요."},
+    {lv:vol!==null&&vol>0.25?"높음":"중간",t:"가격 변동성 리스크",prob:"보통",
+     d:`지역 ㎡당가의 연환산 변동성은 ${vol===null?"측정 불가":pct(vol)}입니다. 개별 필지·매물 특성에 따라 실제 편차는 더 클 수 있습니다.`,
+     act:"단일 거래 사례에 의존하지 말고 다수의 비교 사례로 가격을 검증하세요."},
+    biz?{lv:"높음",t:"임대차·공실 리스크",prob:"높음",
+     d:"상가·건물 수익은 임차 업종, 공실률, 권리금 구조에 따라 크게 달라집니다. 본 분석에는 임대차 현황이 반영되어 있지 않습니다.",
+     act:"임대차계약서·공실 이력·관리비 체납 여부를 반드시 확인하고, 수익률은 보수적으로 재계산하세요."}
+    :{lv:"높음",t:"규제·인허가 리스크",prob:"보통",
+     d:"용도지역, 개발행위허가, 농지·산지 전용, 접도 조건에 따라 실제 활용 가치가 크게 달라집니다. 본 분석에는 필지별 규제 정보가 반영되어 있지 않습니다.",
+     act:"토지이음(토지이용계획확인원)에서 규제를 확인하고, 건축사·행정사 사전 검토를 거치세요."}
+  ]);
+  $("lFinal").textContent=rateKo;
+  $("lFinalTxt").textContent=premium>0.05?`적정가 ${fmt(target)} 대비 고평가 구간입니다. ${fmt(target)} 이하로 협상하거나 관망을 권고합니다.`:`적정가 ${fmt(target)} 수준으로, 규제·접도 확인 후 매수 검토가 가능합니다.`;
+  $("discLand").innerHTML=discText();
+
+  const signL=x=>x==null?null:(x>=0?"+":"")+pct(x);
+  requestAI(state.mode==="biz"?"biz":"land",{
+    지역:state.regionName, 법정동:dong||"전체", [state.mode==="biz"?"주용도":"지목"]:jimok||"전체", [state.mode==="biz"?"유형":"용도지역"]:use||"전체",
+    대상면적:`${area.toLocaleString()}㎡`, 호가:fmt(ask),
+    m2당_호가:`${askUnit.toFixed(1)}만/㎡`, m2당_적정가:`${fairUnit.toFixed(1)}만/㎡`,
+    프리미엄:signL(premium), 가격백분위:`${(pctile*100).toFixed(0)}백분위`,
+    비교거래수:comps.length, Comps_기준:tierDesc,
+    m2당가_모멘텀_연환산:signL(trend), 변동성:vol==null?null:pct(vol), Sharpe:sharpe==null?null:+sharpe.toFixed(2),
+    월평균유사거래:+perMonth.toFixed(1), 종합점수:score, 등급:rateEn, 적정가:fmt(target)
+  },"lComment");
+
+  const scat=comps.map(t=>({x:+t.date,y:t.amount/t.area}));
+  const line=series.map(s=>({x:new Date(Math.floor(s.k/12),s.k%12,15).getTime(),y:s.val}));
+  drawChart("landChart",{type:"scatter",data:{datasets:[
+    {label:"실거래 ㎡당가",data:scat,backgroundColor:"rgba(37,99,235,.45)",pointRadius:4},
+    {label:"월별 중앙값",data:line,type:"line",borderColor:"#1E3A8A",borderWidth:2,pointRadius:0,tension:.3},
+    {label:"㎡당 호가",data:scat.length?[{x:Math.min(...scat.map(p=>p.x)),y:askUnit},{x:Date.now(),y:askUnit}]:[],type:"line",borderColor:"#EF4444",borderDash:[6,4],borderWidth:1.5,pointRadius:0}]},
+    options:chartOpts("만/㎡")});
+  $("reportLand").scrollIntoView({behavior:"smooth"});
+}
+
+initRegion();
+</script>
+</body>
+</html>
