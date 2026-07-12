@@ -11,6 +11,7 @@
 <meta name="theme-color" content="#2563EB">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%232563EB%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 text-anchor=%22middle%22>🏢</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://js.tosspayments.com/v1/payment"></script>
 <style>
 :root{--blue:#2563EB;--deep:#1E3A8A;--light:#EFF6FF;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--text:#334155;--bg:#F8FAFC;--border:#E2E8F0}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif}
@@ -543,10 +544,10 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
   <div class="g3" style="align-items:stretch">
     <div class="price"><div class="nm">Basic</div><div class="amt">₩19,900<small>/월</small></div><div class="de">개인 투자자를 위한 기본 분석</div>
       <ul><li>아파트 상세 리포트</li><li>투자 점수·등급</li><li>PDF 다운로드</li><li>이메일 지원</li></ul>
-      <button class="btn btn-g" onclick="openLead('Basic','pricing')">Basic 사전등록</button></div>
+      <button class="btn btn-g" onclick="openPay('Basic','pricing')">Basic 시작하기</button></div>
     <div class="price pop"><span class="pop-badge">인기</span><div class="nm">Pro</div><div class="amt">₩49,000<small>/월</small></div><div class="de">전문 투자자를 위한 심층 분석</div>
       <ul><li>아파트 + 토지 상세 분석</li><li>AI 애널리스트 코멘트</li><li>시나리오 IRR·민감도</li><li>우선 지원</li></ul>
-      <button class="btn btn-p" onclick="openLead('Pro','pricing')">Pro 사전등록</button></div>
+      <button class="btn btn-p" onclick="openPay('Pro','pricing')">Pro 시작하기</button></div>
     <div class="price"><div class="nm">Expert</div><div class="amt">₩149,000<small>/월</small></div><div class="de">중개사·법인 맞춤형</div>
       <ul><li>전문가용 PDF·고객 공유</li><li>B2B 기능</li><li>무제한 리포트</li><li>전담 지원</li></ul>
       <button class="btn btn-g" onclick="openLead('Expert','pricing')">Expert 문의·사전등록</button></div>
@@ -846,6 +847,33 @@ async function submitLead(){
     setTimeout(()=>closeModal("leadModal"),1800);
   }catch{$("leadMsg").textContent="⚠️ 등록에 실패했습니다. 잠시 후 다시 시도해주세요.";}
 }
+/* ===== 토스페이먼츠 결제 ===== */
+let tossClientKey=null,tossPlans={Basic:19900,Pro:49000,Expert:149000};
+async function initPay(){
+  try{const j=await(await fetch("/api/pay/config")).json();
+    tossClientKey=j.clientKey||null;if(j.plans)tossPlans=j.plans;}catch{}
+}
+function openPay(plan,source){
+  if(!tossClientKey||typeof TossPayments==="undefined"){openLead(plan,source||"pricing");return;} // 결제 미설정 → 사전등록 폴백
+  track("paystart");
+  const orderId=`${plan}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+  TossPayments(tossClientKey).requestPayment("카드",{
+    amount:tossPlans[plan],orderId,orderName:`명당연구소 ${plan} 1개월 이용권`,
+    successUrl:location.origin+"/pay/success",failUrl:location.origin+"/pay/fail"
+  }).catch(e=>{if(e&&e.code!=="USER_CANCEL")alert("결제 오류: "+(e.message||e));});
+}
+function handlePayResult(){
+  const sp=new URLSearchParams(location.search);
+  if(sp.get("paid")){
+    localStorage.setItem("mdPro","1");localStorage.setItem("mdPlan",sp.get("paid"));
+    history.replaceState(null,"","/");
+    setTimeout(()=>alert(`🎉 ${sp.get("paid")} 플랜 결제가 완료되었습니다!\n무제한 분석이 활성화됐어요. 영수증은 카드사 앱에서 확인할 수 있습니다.`),400);
+  }else if(sp.get("payfail")){
+    history.replaceState(null,"","/");
+    setTimeout(()=>alert("💳 결제가 완료되지 않았습니다.\n"+sp.get("payfail")),400);
+  }
+}
+
 /* 무료 사용 한도: 월 5회 (사전등록 시 무제한, 공유 리포트 열람은 무제한) */
 function quotaKey(){const d=new Date();return`mdUse-${d.getFullYear()}-${d.getMonth()+1}`;}
 function checkQuota(){
@@ -875,7 +903,7 @@ function initRoute(){
 }
 
 /* ================= 데이터 로딩 ================= */
-function initRegion(){initRoute();checkServer();initShare();track(state.isTool?"toolview":"pageview");}
+function initRegion(){initRoute();checkServer();initShare();initPay();handlePayResult();track(state.isTool?"toolview":"pageview");}
 async function checkServer(){
   const b=$("keyBadge");
   try{

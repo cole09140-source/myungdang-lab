@@ -65,6 +65,21 @@ function bump(ev) {
   try { fs.writeFileSync(STATS_FILE, JSON.stringify(STATS, null, 1)); } catch {}
 }
 
+/* 토스페이먼츠 결제 (환경변수 TOSS_CLIENT_KEY / TOSS_SECRET_KEY 또는 config.json) */
+function loadTossKeys() {
+  const c = readConfig();
+  const client = (process.env.TOSS_CLIENT_KEY || c.tossClientKey || "").trim();
+  const secret = (process.env.TOSS_SECRET_KEY || c.tossSecretKey || "").trim();
+  return {
+    client: client && !client.includes("여기에") ? client : null,
+    secret: secret && !secret.includes("여기에") ? secret : null,
+  };
+}
+const PLANS = { Basic: 19900, Pro: 49000, Expert: 149000 }; // 월 이용권 (원)
+const ORDERS_FILE = path.join(__dirname, "orders.json");
+let ORDERS = [];
+try { ORDERS = JSON.parse(fs.readFileSync(ORDERS_FILE, "utf-8")); } catch {}
+
 /* ---------- 법정동코드 (시군구) — 아파트 색인·지역 해석용 ---------- */
 const LAWD = {
 "서울특별시":{"종로구":"11110","중구":"11140","용산구":"11170","성동구":"11200","광진구":"11215","동대문구":"11230","중랑구":"11260","성북구":"11290","강북구":"11305","도봉구":"11320","노원구":"11350","은평구":"11380","서대문구":"11410","마포구":"11440","양천구":"11470","강서구":"11500","구로구":"11530","금천구":"11545","영등포구":"11560","동작구":"11590","관악구":"11620","서초구":"11650","강남구":"11680","송파구":"11710","강동구":"11740"},
@@ -319,6 +334,46 @@ const server = http.createServer(async (req, res) => {
     if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname === "/analyze" || u.pathname.startsWith("/share/")) {
       const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
       return send(200, html, "text/html");
+    }
+
+    /* ===== 토스페이먼츠 결제 ===== */
+    if (u.pathname === "/api/pay/config") {
+      return send(200, { clientKey: loadTossKeys().client, plans: PLANS });
+    }
+    if (u.pathname === "/pay/success") {
+      const toss = loadTossKeys();
+      const paymentKey = u.searchParams.get("paymentKey");
+      const orderId = u.searchParams.get("orderId") || "";
+      const amount = +(u.searchParams.get("amount") || 0);
+      const plan = orderId.split("_")[0];
+      const fail = (msg) => { res.writeHead(302, { Location: "/?payfail=" + encodeURIComponent(msg) }); res.end(); };
+      if (!toss.secret || !paymentKey || !PLANS[plan] || amount !== PLANS[plan]) return fail("결제 정보가 올바르지 않습니다.");
+      try {
+        const r = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json",
+            Authorization: "Basic " + Buffer.from(toss.secret + ":").toString("base64") },
+          body: JSON.stringify({ paymentKey, orderId, amount }),
+          signal: AbortSignal.timeout(15000),
+        });
+        const j = await r.json();
+        if (j.status !== "DONE") return fail(j.message || "결제 승인에 실패했습니다.");
+        ORDERS.push({ orderId, plan, amount, method: j.method || "", at: new Date().toISOString(), paymentKey });
+        try { fs.writeFileSync(ORDERS_FILE, JSON.stringify(ORDERS, null, 1)); } catch {}
+        bump("paid");
+        console.log(`  💳 결제 완료: ${plan} ${amount.toLocaleString()}원 (${orderId})`);
+        res.writeHead(302, { Location: "/?paid=" + encodeURIComponent(plan) });
+        return res.end();
+      } catch { return fail("결제 승인 서버 통신에 실패했습니다."); }
+    }
+    if (u.pathname === "/pay/fail") {
+      const msg = u.searchParams.get("message") || "결제가 취소되었습니다.";
+      res.writeHead(302, { Location: "/?payfail=" + encodeURIComponent(msg) });
+      return res.end();
+    }
+    if (u.pathname === "/api/orders") {
+      if (!SERVICE_KEY || u.searchParams.get("key") !== SERVICE_KEY) return send(403, { error: "unauthorized" });
+      return send(200, { count: ORDERS.length, revenue: ORDERS.reduce((s, o) => s + o.amount, 0), orders: ORDERS });
     }
 
     /* 사전등록(리드) 수집 */
