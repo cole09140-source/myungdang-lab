@@ -536,11 +536,15 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
   </div>
 </section>
 
-<section class="sec-mkt alt no-print">
+<section class="sec-mkt alt no-print" id="pricingSec">
   <div class="sec-head">
     <div class="kicker">PRICING</div>
     <h2>필요한 만큼만, 건당 이용권</h2>
-    <p>매달 결제 부담 없이 분석이 필요할 때만 구매하세요. 매월 무료 5건 + 이메일 등록 시 3건, 친구 초대 시 1명당 1건이 추가됩니다.</p>
+    <p>매달 결제 부담 없이 분석이 필요할 때만 구매하세요. 매월 무료 1건 + 이메일 등록 시 3건, 친구 초대 시 1명당 1건이 추가됩니다.</p>
+    <div id="payNotice" style="display:none;background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:14px 18px;margin-top:16px;font-size:14px;font-weight:600">
+      🔒 무료 이용권을 모두 사용했어요. 아래에서 이용권을 구매하거나, 이메일 등록(+3건)·친구 초대(1명당 +1건)로 무료로 받을 수 있습니다.
+      <a style="color:var(--blue);cursor:pointer;text-decoration:underline;margin-left:6px" onclick="openLead('무료 3건 받기','pricing')">무료로 받기 →</a>
+    </div>
   </div>
   <div class="g3" style="grid-template-columns:repeat(4,1fr);align-items:stretch" id="priceGrid">
     <div class="price"><div class="nm">라이트</div><div class="amt">₩2,900<small>/1건</small></div><div class="de">일단 한 번 제대로 보고 싶을 때</div>
@@ -602,8 +606,8 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 <!-- 페이월(이용권 구매) 모달 -->
 <div id="payModal" class="modal-bg">
   <div class="modal">
-    <h3>🔒 이번 달 무료 분석 5건을 모두 사용했어요</h3>
-    <p>필요한 만큼만 이용권을 구매하거나, 친구를 초대해 무료로 받을 수 있어요.</p>
+    <h3>🎫 이용권 구매</h3>
+    <p>필요한 만큼만 구매하거나, 친구를 초대해 무료로 받을 수 있어요. (매월 무료 1건 자동 제공)</p>
     <div id="payPacks"></div>
     <div id="refBox" class="hint" style="margin-top:14px;background:var(--light);border-radius:10px;padding:12px 14px;line-height:1.7"></div>
     <button class="btn btn-g" style="margin-top:10px" onclick="closeModal('payModal');openLead('무제한·기업','paywall')">🏢 무제한·기업 문의</button>
@@ -913,7 +917,7 @@ function quotaKey(){const d=new Date();return`mdUse-${d.getFullYear()}-${d.getMo
 async function checkQuota(){
   if(location.pathname.startsWith("/share/"))return true; // 공유 열람은 무제한
   const k=quotaKey(),used=+localStorage.getItem(k)||0;
-  if(used<5){localStorage.setItem(k,used+1);return true;}
+  if(used<1){localStorage.setItem(k,used+1);return true;} // 매월 무료 1건
   const email=localStorage.getItem("mdEmail");
   if(email){
     try{
@@ -921,7 +925,9 @@ async function checkQuota(){
       if(j.ok){setStatus("ok",`🎫 이용권 1건 사용 — 잔여 ${j.credits}건`);return true;}
     }catch{}
   }
-  openPaywall();return false;
+  track("paywall");
+  location.href="/pricing?from=quota"; // 크레딧 소진 → 결제 페이지로 이동
+  return false;
 }
 function openPaywall(){
   track("paywall");
@@ -940,6 +946,12 @@ function initRoute(){
   const ref=new URLSearchParams(location.search).get("ref");
   if(ref)localStorage.setItem("mdRef",ref.toUpperCase()); // 추천 링크 유입 기록
   const p=location.pathname;
+  if(p==="/pricing"){ // 결제 페이지: 요금제 섹션으로 스크롤 + 소진 안내
+    setTimeout(()=>{
+      if(new URLSearchParams(location.search).get("from")==="quota"&&$("payNotice"))$("payNotice").style.display="block";
+      if($("pricingSec"))$("pricingSec").scrollIntoView({behavior:"smooth"});
+    },500);
+  }
   state.isTool=p.startsWith("/analyze")||p.startsWith("/share/");
   if(!state.isTool)return;
   document.body.classList.add("tool-page");
