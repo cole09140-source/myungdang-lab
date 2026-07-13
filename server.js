@@ -75,10 +75,23 @@ function loadTossKeys() {
     secret: secret && !secret.includes("여기에") ? secret : null,
   };
 }
-const PLANS = { Basic: 19900, Pro: 49000, Expert: 149000 }; // 월 이용권 (원)
+/* 건당 이용권 팩 */
+const PACKS = {
+  P1:   { n: 1,   amount: 2900,   label: "1건" },
+  P6:   { n: 6,   amount: 9900,   label: "6건" },
+  P100: { n: 100, amount: 199000, label: "100건" },
+};
 const ORDERS_FILE = path.join(__dirname, "orders.json");
 let ORDERS = [];
 try { ORDERS = JSON.parse(fs.readFileSync(ORDERS_FILE, "utf-8")); } catch {}
+
+/* 크레딧 원장 (이메일 기준) */
+const CREDITS_FILE = path.join(__dirname, "credits.json");
+let CREDITS = {};
+try { CREDITS = JSON.parse(fs.readFileSync(CREDITS_FILE, "utf-8")); } catch {}
+function saveCredits() { try { fs.writeFileSync(CREDITS_FILE, JSON.stringify(CREDITS, null, 1)); } catch {} }
+function addCredit(email, n) { CREDITS[email] = (CREDITS[email] || 0) + n; saveCredits(); return CREDITS[email]; }
+const validEmail = (e) => typeof e === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
 /* ---------- 법정동코드 (시군구) — 아파트 색인·지역 해석용 ---------- */
 const LAWD = {
@@ -336,18 +349,18 @@ const server = http.createServer(async (req, res) => {
       return send(200, html, "text/html");
     }
 
-    /* ===== 토스페이먼츠 결제 ===== */
+    /* ===== 토스페이먼츠 결제 (건당 이용권) ===== */
     if (u.pathname === "/api/pay/config") {
-      return send(200, { clientKey: loadTossKeys().client, plans: PLANS });
+      return send(200, { clientKey: loadTossKeys().client, packs: PACKS });
     }
     if (u.pathname === "/pay/success") {
       const toss = loadTossKeys();
       const paymentKey = u.searchParams.get("paymentKey");
       const orderId = u.searchParams.get("orderId") || "";
       const amount = +(u.searchParams.get("amount") || 0);
-      const plan = orderId.split("_")[0];
+      const pack = orderId.split("_")[0];
       const fail = (msg) => { res.writeHead(302, { Location: "/?payfail=" + encodeURIComponent(msg) }); res.end(); };
-      if (!toss.secret || !paymentKey || !PLANS[plan] || amount !== PLANS[plan]) return fail("결제 정보가 올바르지 않습니다.");
+      if (!toss.secret || !paymentKey || !PACKS[pack] || amount !== PACKS[pack].amount) return fail("결제 정보가 올바르지 않습니다.");
       try {
         const r = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
           method: "POST",
@@ -358,11 +371,11 @@ const server = http.createServer(async (req, res) => {
         });
         const j = await r.json();
         if (j.status !== "DONE") return fail(j.message || "결제 승인에 실패했습니다.");
-        ORDERS.push({ orderId, plan, amount, method: j.method || "", at: new Date().toISOString(), paymentKey });
+        ORDERS.push({ orderId, pack, n: PACKS[pack].n, amount, method: j.method || "", at: new Date().toISOString(), paymentKey, claimed: false });
         try { fs.writeFileSync(ORDERS_FILE, JSON.stringify(ORDERS, null, 1)); } catch {}
         bump("paid");
-        console.log(`  💳 결제 완료: ${plan} ${amount.toLocaleString()}원 (${orderId})`);
-        res.writeHead(302, { Location: "/?paid=" + encodeURIComponent(plan) });
+        console.log(`  💳 결제 완료: ${PACKS[pack].label} ${amount.toLocaleString()}원 (${orderId})`);
+        res.writeHead(302, { Location: "/?paid=" + encodeURIComponent(orderId) });
         return res.end();
       } catch { return fail("결제 승인 서버 통신에 실패했습니다."); }
     }
@@ -371,23 +384,61 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(302, { Location: "/?payfail=" + encodeURIComponent(msg) });
       return res.end();
     }
+    /* 결제한 이용권을 이메일 계정에 충전 (1회만) */
+    if (u.pathname === "/api/claim" && req.method === "POST") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      const { orderId, email } = JSON.parse(body || "{}");
+      const order = ORDERS.find(o => o.orderId === orderId);
+      if (!order) return send(404, { error: "주문을 찾을 수 없습니다." });
+      if (!validEmail(email)) return send(400, { error: "올바른 이메일이 필요합니다." });
+      if (order.claimed) return send(200, { ok: true, already: true, credits: CREDITS[email] || 0 });
+      order.claimed = true; order.email = email;
+      try { fs.writeFileSync(ORDERS_FILE, JSON.stringify(ORDERS, null, 1)); } catch {}
+      const credits = addCredit(email, order.n);
+      return send(200, { ok: true, added: order.n, credits });
+    }
+    /* 크레딧 조회/사용 */
+    if (u.pathname === "/api/credits" && req.method === "GET") {
+      const email = u.searchParams.get("email") || "";
+      return send(200, { credits: validEmail(email) ? (CREDITS[email] || 0) : 0 });
+    }
+    if (u.pathname === "/api/credits/use" && req.method === "POST") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      const { email } = JSON.parse(body || "{}");
+      if (!validEmail(email) || !(CREDITS[email] > 0)) return send(200, { ok: false, credits: (validEmail(email) && CREDITS[email]) || 0 });
+      CREDITS[email] -= 1; saveCredits();
+      return send(200, { ok: true, credits: CREDITS[email] });
+    }
     if (u.pathname === "/api/orders") {
       if (!SERVICE_KEY || u.searchParams.get("key") !== SERVICE_KEY) return send(403, { error: "unauthorized" });
-      return send(200, { count: ORDERS.length, revenue: ORDERS.reduce((s, o) => s + o.amount, 0), orders: ORDERS });
+      return send(200, { count: ORDERS.length, revenue: ORDERS.reduce((s, o) => s + o.amount, 0), orders: ORDERS, credits: CREDITS });
     }
 
-    /* 사전등록(리드) 수집 */
+    /* 사전등록(리드) 수집 + 추천인 시스템: 신규 등록 시 환영 3건, 추천인에게 1건 */
     if (u.pathname === "/api/lead" && req.method === "POST") {
       let body = "";
       for await (const chunk of req) body += chunk;
-      const { email, name, plan, source } = JSON.parse(body || "{}");
-      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return send(400, { error: "올바른 이메일을 입력해주세요." });
+      const { email, name, plan, source, ref } = JSON.parse(body || "{}");
+      if (!validEmail(email)) return send(400, { error: "올바른 이메일을 입력해주세요." });
+      const existing = LEADS.find(l => l.email === email);
+      if (existing) return send(200, { ok: true, code: existing.code, credits: CREDITS[email] || 0, existing: true });
+      const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+      let referredBy = "";
+      if (ref) {
+        const referrer = LEADS.find(l => l.code === String(ref).toUpperCase() && l.email !== email);
+        if (referrer) { addCredit(referrer.email, 1); referredBy = referrer.email; bump("referral");
+          console.log(`  🤝 추천 성공: ${referrer.email} +1건 (신규: ${email})`); }
+      }
       LEADS.push({ email: String(email).slice(0, 120), name: String(name || "").slice(0, 60),
-        plan: String(plan || "").slice(0, 30), source: String(source || "").slice(0, 30), at: new Date().toISOString() });
+        plan: String(plan || "").slice(0, 30), source: String(source || "").slice(0, 30),
+        code, referredBy, at: new Date().toISOString() });
       try { fs.writeFileSync(LEADS_FILE, JSON.stringify(LEADS, null, 1)); } catch {}
+      const credits = addCredit(email, 3); // 환영 보너스 3건
       bump("lead");
-      console.log(`  🔔 사전등록: ${email} (${plan || "-"})`);
-      return send(200, { ok: true });
+      console.log(`  🔔 사전등록: ${email} (code ${code})`);
+      return send(200, { ok: true, code, credits });
     }
     /* 관리자: 리드 목록 (본인 인증키 필요) */
     if (u.pathname === "/api/leads") {

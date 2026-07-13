@@ -420,9 +420,10 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
     </div>
 
     <div class="card mt no-print" style="text-align:center;border:2px solid var(--blue)">
-      <b style="font-size:16px;color:#0F172A">이 단지, 계속 지켜보고 싶으신가요?</b>
-      <p class="hint" style="margin:8px 0 14px">베타 사전등록 시 무제한 분석 · 정식 출시 우선 안내 · 얼리버드 할인을 드립니다.</p>
-      <button class="btn btn-p" onclick="openLead('Pro','report')">🔔 무료 사전등록</button>
+      <b style="font-size:16px;color:#0F172A">더 많은 단지를 비교하고 싶으신가요?</b>
+      <p class="hint" style="margin:8px 0 14px">이메일 등록 시 <b>무료 3건</b> + 추천 링크(친구 1명당 1건). 필요하면 건당 이용권으로 이어서 분석하세요.</p>
+      <button class="btn btn-p" onclick="openLead('무료 3건','report')">🎁 무료 이용권 받기</button>
+      <button class="btn btn-g" style="margin-left:8px" onclick="openPaywall()">🎫 이용권 구매</button>
     </div>
 
     <div class="src-box">
@@ -538,20 +539,24 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 <section class="sec-mkt alt no-print">
   <div class="sec-head">
     <div class="kicker">PRICING</div>
-    <h2>합리적인 요금제</h2>
-    <p>필요에 맞는 플랜을 선택하세요. (예시 요금제 — 기획서 기준)</p>
+    <h2>필요한 만큼만, 건당 이용권</h2>
+    <p>매달 결제 부담 없이 분석이 필요할 때만 구매하세요. 매월 무료 5건 + 이메일 등록 시 3건, 친구 초대 시 1명당 1건이 추가됩니다.</p>
   </div>
-  <div class="g3" style="align-items:stretch">
-    <div class="price"><div class="nm">Basic</div><div class="amt">₩19,900<small>/월</small></div><div class="de">개인 투자자를 위한 기본 분석</div>
-      <ul><li>아파트 상세 리포트</li><li>투자 점수·등급</li><li>PDF 다운로드</li><li>이메일 지원</li></ul>
-      <button class="btn btn-g" onclick="openPay('Basic','pricing')">Basic 시작하기</button></div>
-    <div class="price pop"><span class="pop-badge">인기</span><div class="nm">Pro</div><div class="amt">₩49,000<small>/월</small></div><div class="de">전문 투자자를 위한 심층 분석</div>
-      <ul><li>아파트 + 토지 상세 분석</li><li>AI 애널리스트 코멘트</li><li>시나리오 IRR·민감도</li><li>우선 지원</li></ul>
-      <button class="btn btn-p" onclick="openPay('Pro','pricing')">Pro 시작하기</button></div>
-    <div class="price"><div class="nm">Expert</div><div class="amt">₩149,000<small>/월</small></div><div class="de">중개사·법인 맞춤형</div>
-      <ul><li>전문가용 PDF·고객 공유</li><li>B2B 기능</li><li>무제한 리포트</li><li>전담 지원</li></ul>
-      <button class="btn btn-g" onclick="openLead('Expert','pricing')">Expert 문의·사전등록</button></div>
+  <div class="g3" style="grid-template-columns:repeat(4,1fr);align-items:stretch" id="priceGrid">
+    <div class="price"><div class="nm">라이트</div><div class="amt">₩2,900<small>/1건</small></div><div class="de">일단 한 번 제대로 보고 싶을 때</div>
+      <ul><li>전체 상세 리포트 1건</li><li>AI 애널리스트 코멘트</li><li>PDF·CSV 다운로드</li></ul>
+      <button class="btn btn-g" onclick="openPay('P1','pricing')">1건 구매</button></div>
+    <div class="price pop"><span class="pop-badge">인기 · 45% 할인</span><div class="nm">스탠다드</div><div class="amt">₩9,900<small>/6건</small></div><div class="de">건당 1,650원 — 비교 검토에 최적</div>
+      <ul><li>상세 리포트 6건</li><li>여러 단지·지역 비교</li><li>공유 링크 무제한</li></ul>
+      <button class="btn btn-p" onclick="openPay('P6','pricing')">6건 구매</button></div>
+    <div class="price"><div class="nm">프로</div><div class="amt">₩199,000<small>/100건</small></div><div class="de">건당 1,990원 — 중개사·투자 모임용</div>
+      <ul><li>상세 리포트 100건</li><li>고객 상담용 PDF</li><li>우선 지원</li></ul>
+      <button class="btn btn-g" onclick="openPay('P100','pricing')">100건 구매</button></div>
+    <div class="price"><div class="nm">무제한 · 기업</div><div class="amt" style="font-size:24px">별도 협의</div><div class="de">법인·프롭테크·대량 분석</div>
+      <ul><li>무제한 분석</li><li>API 연동 협의</li><li>맞춤 리포트·전담 지원</li></ul>
+      <button class="btn btn-g" onclick="openLead('무제한·기업','pricing')">문의하기</button></div>
   </div>
+  <style>@media(max-width:1000px){#priceGrid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){#priceGrid{grid-template-columns:1fr!important}}</style>
 </section>
 
 <section class="sec-mkt no-print">
@@ -591,6 +596,18 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
     <button class="btn btn-p" onclick="submitLead()">무료로 등록하기</button>
     <button class="btn btn-g" onclick="closeModal('leadModal')">다음에 할게요</button>
     <p class="hint" style="margin-top:10px;margin-bottom:0">등록 시 개인정보처리방침에 동의하는 것으로 간주합니다. 이메일은 서비스 안내 외 용도로 사용하지 않습니다.</p>
+  </div>
+</div>
+
+<!-- 페이월(이용권 구매) 모달 -->
+<div id="payModal" class="modal-bg">
+  <div class="modal">
+    <h3>🔒 이번 달 무료 분석 5건을 모두 사용했어요</h3>
+    <p>필요한 만큼만 이용권을 구매하거나, 친구를 초대해 무료로 받을 수 있어요.</p>
+    <div id="payPacks"></div>
+    <div id="refBox" class="hint" style="margin-top:14px;background:var(--light);border-radius:10px;padding:12px 14px;line-height:1.7"></div>
+    <button class="btn btn-g" style="margin-top:10px" onclick="closeModal('payModal');openLead('무제한·기업','paywall')">🏢 무제한·기업 문의</button>
+    <button class="btn btn-g" onclick="closeModal('payModal')">닫기</button>
   </div>
 </div>
 
@@ -822,10 +839,10 @@ function track(ev){try{fetch("/api/track",{method:"POST",headers:{"Content-Type"
 let leadCtx={plan:"",source:""};
 function openLead(plan,source){
   leadCtx={plan:plan||"",source:source||""};
-  $("leadTitle").textContent=source==="limit"?"🔒 이번 달 무료 분석 5회를 모두 사용했어요":"🔔 베타 사전등록";
-  $("leadDesc").innerHTML=source==="limit"
-    ?"이메일만 남기면 <b>베타 기간 무제한 분석</b>이 즉시 열립니다. 정식 출시 시 우선 안내와 얼리버드 할인도 드려요."
-    :`이메일만 남기면 <b>베타 기간 무제한 분석</b>이 바로 열리고, 정식 출시 시 ${plan?`<b>${plan}</b> 플랜 `:""}우선 안내와 할인 혜택을 드립니다.`;
+  $("leadTitle").textContent=source==="buy"?"💳 구매 전 이메일 등록":source==="claim"?"🎫 이용권 지급용 이메일 등록":"🎁 무료 이용권 받기";
+  $("leadDesc").innerHTML=source==="buy"
+    ?"결제한 이용권을 지급·복원하려면 이메일이 필요합니다. 등록하면 <b>무료 3건</b>도 함께 드려요."
+    :`이메일만 남기면 <b>무료 이용권 3건</b> + <b>내 추천 링크</b>(친구 1명 등록 시 1건 추가)를 드립니다.${plan?` (${plan})`:""}`;
   $("leadMsg").textContent="";
   $("leadModal").style.display="flex";
   track("leadopen");
@@ -837,55 +854,91 @@ async function submitLead(){
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){$("leadMsg").textContent="⚠️ 올바른 이메일을 입력해주세요.";return;}
   try{
     const r=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,name,plan:leadCtx.plan,source:leadCtx.source})});
+      body:JSON.stringify({email,name,plan:leadCtx.plan,source:leadCtx.source,ref:localStorage.getItem("mdRef")||""})});
     const j=await r.json();
     if(j.error){$("leadMsg").textContent="⚠️ "+j.error;return;}
-    localStorage.setItem("mdPro","1");
+    localStorage.setItem("mdEmail",email);
+    if(j.code)localStorage.setItem("mdCode",j.code);
     $("leadMsg").textContent="";
     $("leadTitle").textContent="🎉 등록 완료!";
-    $("leadDesc").innerHTML="<b>베타 무제한 분석이 열렸습니다.</b> 정식 출시 소식을 가장 먼저 알려드릴게요.";
-    setTimeout(()=>closeModal("leadModal"),1800);
+    $("leadDesc").innerHTML=`${j.existing?"이미 등록된 계정입니다.":"<b>무료 이용권 3건이 충전되었습니다!</b>"} 현재 잔여 <b>${j.credits}건</b><br><br>
+      🤝 <b>내 추천 링크</b> — 친구가 등록하면 <b>1명당 1건</b> 추가!<br>
+      <input readonly value="${location.origin}/?ref=${j.code}" onclick="this.select();document.execCommand('copy');$('leadMsg').textContent='📋 링크가 복사되었습니다!'" style="margin-top:6px;font-size:12px;width:100%">`;
+    track("leaddone");
+    // 결제 대기 중이었으면 이어서 결제
+    if(pendingPack){const p=pendingPack;pendingPack=null;setTimeout(()=>{closeModal("leadModal");openPay(p,"resume");},900);}
+    if(localStorage.getItem("mdPendingClaim"))setTimeout(()=>{closeModal("leadModal");claimOrder(localStorage.getItem("mdPendingClaim"));},900);
   }catch{$("leadMsg").textContent="⚠️ 등록에 실패했습니다. 잠시 후 다시 시도해주세요.";}
 }
-/* ===== 토스페이먼츠 결제 ===== */
-let tossClientKey=null,tossPlans={Basic:19900,Pro:49000,Expert:149000};
+/* ===== 토스페이먼츠 결제 (건당 이용권) ===== */
+let tossClientKey=null,tossPacks={P1:{n:1,amount:2900,label:"1건"},P6:{n:6,amount:9900,label:"6건"},P100:{n:100,amount:199000,label:"100건"}};
+let pendingPack=null;
 async function initPay(){
   try{const j=await(await fetch("/api/pay/config")).json();
-    tossClientKey=j.clientKey||null;if(j.plans)tossPlans=j.plans;}catch{}
+    tossClientKey=j.clientKey||null;if(j.packs)tossPacks=j.packs;}catch{}
 }
-function openPay(plan,source){
-  if(!tossClientKey||typeof TossPayments==="undefined"){openLead(plan,source||"pricing");return;} // 결제 미설정 → 사전등록 폴백
+function openPay(pack,source){
+  const email=localStorage.getItem("mdEmail");
+  if(!email){pendingPack=pack;openLead("이용권 구매",source||"buy");return;} // 이용권 지급용 이메일 먼저
+  if(!tossClientKey||typeof TossPayments==="undefined"){openLead("이용권 구매(결제 준비중)",source||"pricing");return;}
   track("paystart");
-  const orderId=`${plan}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+  const p=tossPacks[pack];
+  const orderId=`${pack}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
   TossPayments(tossClientKey).requestPayment("카드",{
-    amount:tossPlans[plan],orderId,orderName:`명당연구소 ${plan} 1개월 이용권`,
+    amount:p.amount,orderId,orderName:`명당연구소 분석 ${p.label} 이용권`,
+    customerEmail:email,
     successUrl:location.origin+"/pay/success",failUrl:location.origin+"/pay/fail"
   }).catch(e=>{if(e&&e.code!=="USER_CANCEL")alert("결제 오류: "+(e.message||e));});
 }
+async function claimOrder(orderId){
+  const email=localStorage.getItem("mdEmail");
+  if(!email){localStorage.setItem("mdPendingClaim",orderId);openLead("이용권 지급","claim");return;}
+  try{
+    const j=await(await fetch("/api/claim",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({orderId,email})})).json();
+    if(j.ok){localStorage.removeItem("mdPendingClaim");
+      alert(`🎉 결제 완료! ${j.added?j.added+"건이 충전되었습니다.":""}\n현재 잔여 이용권: ${j.credits}건`);}
+    else alert("이용권 지급 오류: "+(j.error||""));
+  }catch{alert("이용권 지급 통신 오류 — 새로고침 후 자동 재시도됩니다.");localStorage.setItem("mdPendingClaim",orderId);}
+}
 function handlePayResult(){
   const sp=new URLSearchParams(location.search);
-  if(sp.get("paid")){
-    localStorage.setItem("mdPro","1");localStorage.setItem("mdPlan",sp.get("paid"));
-    history.replaceState(null,"","/");
-    setTimeout(()=>alert(`🎉 ${sp.get("paid")} 플랜 결제가 완료되었습니다!\n무제한 분석이 활성화됐어요. 영수증은 카드사 앱에서 확인할 수 있습니다.`),400);
-  }else if(sp.get("payfail")){
-    history.replaceState(null,"","/");
-    setTimeout(()=>alert("💳 결제가 완료되지 않았습니다.\n"+sp.get("payfail")),400);
-  }
+  if(sp.get("paid")){history.replaceState(null,"","/");setTimeout(()=>claimOrder(sp.get("paid")),300);}
+  else if(sp.get("payfail")){history.replaceState(null,"","/");setTimeout(()=>alert("💳 결제가 완료되지 않았습니다.\n"+sp.get("payfail")),400);}
+  else if(localStorage.getItem("mdPendingClaim"))claimOrder(localStorage.getItem("mdPendingClaim"));
 }
 
-/* 무료 사용 한도: 월 5회 (사전등록 시 무제한, 공유 리포트 열람은 무제한) */
+/* ===== 사용 한도: 무료 월 5건 → 이후 이용권(크레딧) 차감 ===== */
 function quotaKey(){const d=new Date();return`mdUse-${d.getFullYear()}-${d.getMonth()+1}`;}
-function checkQuota(){
-  if(localStorage.getItem("mdPro"))return true;
-  if(location.pathname.startsWith("/share/"))return true;
-  if((+localStorage.getItem(quotaKey())||0)>=5){openLead("","limit");return false;}
-  return true;
+async function checkQuota(){
+  if(location.pathname.startsWith("/share/"))return true; // 공유 열람은 무제한
+  const k=quotaKey(),used=+localStorage.getItem(k)||0;
+  if(used<5){localStorage.setItem(k,used+1);return true;}
+  const email=localStorage.getItem("mdEmail");
+  if(email){
+    try{
+      const j=await(await fetch("/api/credits/use",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})})).json();
+      if(j.ok){setStatus("ok",`🎫 이용권 1건 사용 — 잔여 ${j.credits}건`);return true;}
+    }catch{}
+  }
+  openPaywall();return false;
 }
-function useQuota(){const k=quotaKey();localStorage.setItem(k,(+localStorage.getItem(k)||0)+1);}
+function openPaywall(){
+  track("paywall");
+  const email=localStorage.getItem("mdEmail"),code=localStorage.getItem("mdCode");
+  $("payPacks").innerHTML=Object.entries(tossPacks).map(([k,p])=>
+    `<button class="btn ${k==='P6'?'btn-p':'btn-g'}" style="margin-top:8px" onclick="closeModal('payModal');openPay('${k}','paywall')">${p.label} — ₩${p.amount.toLocaleString()}${k==='P6'?' (인기)':''}</button>`).join("");
+  $("refBox").innerHTML=code
+    ?`🤝 <b>친구 초대하고 무료로 받기</b> — 친구가 아래 링크로 등록하면 <b>1명당 1건</b>이 충전됩니다.<br>
+      <input readonly value="${location.origin}/?ref=${code}" onclick="this.select();document.execCommand('copy');this.nextElementSibling.textContent='복사됨!'" style="margin-top:6px;font-size:12px"><span class="hint"></span>`
+    :`🤝 이메일 등록만 해도 <b>무료 3건</b> + 추천 링크(1명당 1건)를 드립니다. <a style="color:var(--blue);cursor:pointer;font-weight:700" onclick="closeModal('payModal');openLead('무료 3건 받기','paywall')">지금 받기 →</a>`;
+  $("payModal").style.display="flex";
+}
 
 /* ================= 라우팅: 메인(랜딩) ↔ /analyze(분석 전용) ================= */
 function initRoute(){
+  const ref=new URLSearchParams(location.search).get("ref");
+  if(ref)localStorage.setItem("mdRef",ref.toUpperCase()); // 추천 링크 유입 기록
   const p=location.pathname;
   state.isTool=p.startsWith("/analyze")||p.startsWith("/share/");
   if(!state.isTool)return;
@@ -1274,11 +1327,11 @@ function renderPeers(c,band){
 }
 
 /* ================= 아파트 분석 ================= */
-function analyzeApt(){
+async function analyzeApt(){
   if(!state.complex||!state.areaBand)return alert("단지와 면적 타입을 선택해주세요.");
   const ask=+$("askPrice").value;if(!ask)return alert("매수 예정가(호가)를 입력해주세요.");
-  if(!checkQuota())return;
-  useQuota();track("analyze");
+  if(!await checkQuota())return;
+  track("analyze");
   const rf=(+$("rf").value||3)/100,conv=(+$("convRate").value||6)/100;
   const c=state.complex,band=state.areaBand;
   const inBand=t=>Math.abs(t.area-band)<=3;
@@ -1469,11 +1522,11 @@ function buildLandFilters(){
   $("landJimok").innerHTML=opts(D.map(t=>t.jimok).filter(Boolean),state.mode==="biz"?"주용도":"지목");
   $("landUse").innerHTML=opts(D.map(t=>t.use).filter(Boolean),state.mode==="biz"?"유형":"용도지역");
 }
-function analyzeLand(){
+async function analyzeLand(){
   const area=+$("landArea").value,ask=+$("landAsk").value;
   if(!area||!ask)return alert("대상 면적과 호가를 입력해주세요.");
-  if(!checkQuota())return;
-  useQuota();track("analyze");
+  if(!await checkQuota())return;
+  track("analyze");
   const rf=(+$("rfLand").value||3)/100;
   const dong=$("landDong").value,jimok=$("landJimok").value,use=$("landUse").value;
   const askUnit=ask/area; // 만원/㎡
