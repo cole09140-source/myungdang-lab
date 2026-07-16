@@ -222,6 +222,9 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 .tool-page .hero-search{margin-top:0}
 .adv-toggle{font-size:12.5px;color:var(--blue);cursor:pointer;font-weight:700;margin-top:10px;display:inline-block}
 #advRow{display:none}
+/* 추천 검색어 칩 */
+.schip{display:inline-block;background:var(--light);color:var(--blue);border:1px solid #DBEAFE;border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:600;margin:0 6px 6px 0;cursor:pointer;transition:.15s}
+.schip:hover{background:#DBEAFE}
 /* 헤더 탭 (Land AI 스타일 세그먼트) */
 .htabs{display:flex;gap:4px;background:#F1F5F9;border:1px solid var(--border);border-radius:12px;padding:4px}
 .htab{padding:8px 18px;border-radius:9px;font-weight:700;font-size:13.5px;cursor:pointer;color:#64748B;transition:.15s;white-space:nowrap}
@@ -272,8 +275,9 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
           <button class="btn btn-y" id="loadBtn" onclick="loadData()">분석 →</button>
           <div class="addr-suggest" id="addrSuggest"></div>
         </div>
-        <div class="hint">주소나 단지명을 입력하면 자동완성 목록에서 정확한 대상을 선택할 수 있습니다.
+        <div class="hint" id="searchHint">아파트명을 입력하면 자동완성 목록에서 단지를 선택할 수 있습니다.
           <span class="adv-toggle" onclick="document.getElementById('advRow').style.display=document.getElementById('advRow').style.display==='flex'?'none':'flex'">⚙️ 상세 설정</span></div>
+        <div id="sugChips" class="mt no-print"></div>
         <div id="advRow" class="mt" style="gap:12px;flex-wrap:wrap">
           <div><label>조회 기간</label><select id="months" style="width:130px"><option value="12">12개월</option><option value="24" selected>24개월</option><option value="36">36개월</option></select></div>
           <div><label>법정동코드 직접 입력</label><input id="lawdManual" placeholder="5자리 (예: 41135)" style="width:200px"></div>
@@ -390,6 +394,19 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
       <p class="hint mt" id="aPeersNote"></p>
     </div>
 
+    <div class="grid2 mt">
+      <div class="card"><h2 class="sec-t">🏛️ 층별 가격 분석</h2><div class="kv" id="aFloors"></div><p class="hint mt" id="aFloorsNote"></p></div>
+      <div class="card"><h2 class="sec-t">🎯 협상 가이드</h2><div class="kv" id="aNego"></div><p class="hint mt" id="aNegoNote"></p></div>
+    </div>
+
+    <div class="card mt"><h2 class="sec-t">📊 가격 분포 (최근 12개월 · 빨간 막대 = 내 호가 구간)</h2>
+      <div class="chart-box" style="height:190px"><canvas id="histChart"></canvas></div></div>
+
+    <div class="card mt"><h2 class="sec-t">📜 최근 실거래 내역</h2>
+      <table><thead><tr><th>거래일</th><th>층</th><th>전용면적</th><th>거래금액</th><th>㎡당가</th></tr></thead><tbody id="aTrades"></tbody></table>
+      <p class="hint mt">동일 단지 · 선택 면적 타입(±3㎡) 최근 12건 — 전체 내역은 ⬇️ 데이터 CSV로 받으세요</p>
+    </div>
+
     <div class="card mt">
       <h2 class="sec-t">📈 가격 추이 &amp; 실거래 분포</h2>
       <div class="chart-box"><canvas id="priceChart"></canvas></div>
@@ -460,6 +477,9 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
       <div class="card"><h2 class="sec-t">📊 상대가치 평가 (㎡당가 Comps)</h2><div class="kv" id="lComps"></div><p class="hint mt" id="lCompsNote"></p></div>
       <div class="card"><h2 class="sec-t">📉 추세 &amp; 리스크</h2><div class="kv" id="lTech"></div></div>
     </div>
+    <div class="card mt"><h2 class="sec-t">📐 면적대별 ㎡당가 (유사 거래)</h2><div class="kv" id="lAreaBands"></div>
+      <p class="hint mt">면적 구간별 실거래 중앙값 — 대상 면적과 가까운 구간의 단가를 기준으로 검토하세요.</p></div>
+
     <div class="card mt" id="lMapCard" style="display:none">
       <h2 class="sec-t">🗺️ 위치 및 주변 지도</h2>
       <iframe id="lMap" style="width:100%;height:320px;border:1px solid var(--border);border-radius:12px" loading="lazy"></iframe>
@@ -968,7 +988,7 @@ function initRoute(){
 }
 
 /* ================= 데이터 로딩 ================= */
-function initRegion(){initRoute();checkServer();initShare();initPay();handlePayResult();track(state.isTool?"toolview":"pageview");}
+function initRegion(){initRoute();setMode(state.mode);checkServer();initShare();initPay();handlePayResult();track(state.isTool?"toolview":"pageview");}
 async function checkServer(){
   const b=$("keyBadge");
   try{
@@ -1059,10 +1079,21 @@ async function loadData(){
       if(state.mode==="biz")state.biz=arr;else state.land=arr;
       setStatus("ok",`✅ ${state.regionName} — ${state.mode==="biz"?"상업·업무용":"토지"} 매매 ${arr.length.toLocaleString()}건 로드 완료`);
       buildLandFilters();
-      // 주소 뒤 동 이름으로 법정동 자동 선택
+      // 상세 주소의 동 이름 매칭 → 법정동 자동 선택 + 원샷 리포트
+      let matchedDong=null;
       if(state.aptQuery){
         const opt=[...$("landDong").options].find(o=>o.value&&state.aptQuery.includes(o.value));
-        if(opt)$("landDong").value=opt.value;
+        if(opt){$("landDong").value=opt.value;matchedDong=opt.value;}
+      }
+      if(matchedDong){
+        const set=arr.filter(t=>!t.share&&t.dong===matchedDong);
+        const units=(set.length>=3?set:arr.filter(t=>!t.share)).map(t=>t.amount/t.area);
+        const defA=state.mode==="biz"?200:660;
+        $("landArea").value=defA;
+        $("landAsk").value=Math.round(median(units)*defA);
+        setStatus("ok",`✅ ${state.regionName} ${matchedDong} 자동 분석 — 면적(${defA}㎡)·호가는 시세 기본값 (직접 수정 가능)`);
+        analyzeLand();
+        return;
       }
       setTimeout(()=>$("landPicker").scrollIntoView({behavior:"smooth"}),300);
     }
@@ -1184,6 +1215,17 @@ function demoReport(kind){
 }
 
 /* ================= 탭 (아파트/토지/상권) ================= */
+const SUG={
+  apt:["래미안원베일리","헬리오시티","은마아파트","잠실엘스","분당 시범단지"],
+  land:["종로구 세종로 1","파주시 문발동","김포시 통진읍","제주시 애월읍"],
+  biz:["마포구 서교동","강남구 역삼동","성수동 카페거리","해운대구 우동"]
+};
+function renderChips(){
+  const box=$("sugChips");if(!box)return;
+  box.innerHTML=`<span class="hint" style="margin-right:6px">${state.mode==="apt"?"🔥 인기 검색:":"📍 예시 주소:"}</span>`+
+    SUG[state.mode].map(v=>`<span class="schip" onclick="chipGo('${v}')">${v}</span>`).join("");
+}
+function chipGo(v){$("bigAddr").value=v;state.selRegion=null;state.aptQuery="";loadData();}
 function setMode(m){state.mode=m;
   $("tabApt").classList.toggle("on",m==="apt");
   $("tabLand").classList.toggle("on",m==="land");
@@ -1198,6 +1240,15 @@ function setMode(m){state.mode=m;
   $("labJimok").textContent=biz?"건물 주용도":"지목";
   $("labUse").textContent=biz?"유형 (일반/집합)":"용도지역";
   if(m!=="apt"&&curLand().length)buildLandFilters();
+  // 탭별 검색 UX
+  $("bigAddr").placeholder=m==="apt"?"아파트명 입력 — 예: 래미안원베일리, 헬리오시티"
+    :m==="land"?"토지 상세 주소 입력 — 예: 종로구 세종로 1"
+    :"상권 상세 주소 입력 — 예: 마포구 서교동 395";
+  if($("searchHint")&&$("searchHint").childNodes[0])
+    $("searchHint").childNodes[0].nodeValue=(m==="apt"?"아파트명을 입력하면 자동완성 목록에서 단지를 선택할 수 있습니다. "
+      :m==="land"?"상세 주소(동·지번)를 입력하면 해당 지역 토지 리포트를 자동 생성합니다. "
+      :"상세 주소를 입력하면 해당 상권의 상가·건물 리포트를 자동 생성합니다. ");
+  renderChips();
 }
 
 /* ================= 아파트: 단지 목록 ================= */
@@ -1500,6 +1551,34 @@ async function analyzeApt(){
     주변단지_비교:peerSummary
   },"aComment");
 
+  /* 층별 가격 · 협상 가이드 · 분포 · 거래내역 */
+  const cut12=new Date();cut12.setMonth(cut12.getMonth()-12);
+  const t12=c.trades.filter(t=>inBand(t)&&t.date>=cut12).sort((a,b)=>b.date-a.date);
+  const fl=(lo,hi)=>t12.filter(t=>t.floor>=lo&&t.floor<=hi).map(t=>t.amount);
+  const fg=[["저층 (1~5층)",fl(1,5)],["중층 (6~15층)",fl(6,15)],["고층 (16층~)",fl(16,999)]];
+  $("aFloors").innerHTML=fg.map(([n,arr2])=>`<div class="item"><small>${n} · ${arr2.length}건</small><b>${arr2.length?fmt(median(arr2)):"-"}</b></div>`).join("");
+  $("aFloorsNote").textContent="최근 12개월 동일 면적 타입 실거래 중앙값 기준";
+  const sortedAmt=t12.map(t=>t.amount).sort((a,b)=>a-b);
+  const qv=p=>sortedAmt.length?sortedAmt[Math.max(0,Math.floor((sortedAmt.length-1)*p))]:null;
+  $("aNego").innerHTML=sortedAmt.length?`
+    <div class="item"><small>급매 기준 (하위 10%)</small><b>${fmt(qv(0.1))}</b></div>
+    <div class="item"><small>추천 협상 범위</small><b>${fmt(qv(0.25))} ~ ${fmt(qv(0.5))}</b></div>
+    <div class="item"><small>12개월 최저 ~ 최고</small><b>${fmt(sortedAmt[0])} ~ ${fmt(sortedAmt[sortedAmt.length-1])}</b></div>
+    <div class="item"><small>내 호가 − 중앙값</small><b style="color:${ask>qv(0.5)?'var(--red)':'var(--green)'}">${(ask>=qv(0.5)?"+":"")+fmt(ask-qv(0.5))}</b></div>`
+    :'<div class="item"><small>최근 12개월 거래 부족</small><b>-</b></div>';
+  $("aNegoNote").textContent="실거래 분위수 기반 참고 범위 — 매물 상태·층·향·조망에 따라 달라질 수 있습니다.";
+  $("aTrades").innerHTML=t12.slice(0,12).map(t=>`<tr><td>${t.date.getFullYear()}.${String(t.date.getMonth()+1).padStart(2,"0")}.${String(t.date.getDate()).padStart(2,"0")}</td><td>${t.floor}층</td><td>${t.area}㎡</td><td>${fmt(t.amount)}</td><td>${(t.amount/t.area).toFixed(0)}만</td></tr>`).join("")
+    ||'<tr><td colspan="5" style="text-align:center;color:#94A3B8">최근 12개월 거래 없음</td></tr>';
+  if(sortedAmt.length>=4){
+    const mn=sortedAmt[0],mx=sortedAmt[sortedAmt.length-1],bins=8,w=(mx-mn)/bins||1;
+    const counts=Array(bins).fill(0);
+    sortedAmt.forEach(v=>counts[Math.min(bins-1,Math.floor((v-mn)/w))]++);
+    drawChart("histChart",{type:"bar",data:{labels:counts.map((_,i)=>fmt(Math.round(mn+w*(i+0.5)))),
+      datasets:[{data:counts,backgroundColor:counts.map((_,i)=>ask>=mn+w*i&&ask<mn+w*(i+1)+1?"rgba(239,68,68,.75)":"rgba(37,99,235,.5)")}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y+"건"}}},
+        scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}});
+  }else drawChart("histChart",{type:"bar",data:{labels:["표본 부족"],datasets:[{data:[0]}]},options:{plugins:{legend:{display:false}}}});
+
   /* 차트 */
   const scat=c.trades.filter(inBand).map(t=>({x:+t.date,y:t.amount}));
   const line=monthlySeries(c.trades.filter(inBand),t=>t.amount).map(s=>({x:new Date(Math.floor(s.k/12),s.k%12,15).getTime(),y:s.val}));
@@ -1607,6 +1686,18 @@ async function analyzeLand(){
     <div class="item"><small>월평균 유사거래</small><b>${perMonth.toFixed(1)}건 ${perMonth<0.5?"(환금성 주의)":""}</b></div>`;
   const recent=[...comps].sort((a,b)=>b.date-a.date).slice(0,10);
   $("lCompsTable").innerHTML=recent.map(t=>`<tr><td>${t.date.getFullYear()}.${String(t.date.getMonth()+1).padStart(2,"0")}</td><td>${t.dong}</td><td>${t.jimok}</td><td>${t.use}</td><td>${t.area.toLocaleString()}</td><td>${t.amount.toLocaleString()}</td><td>${(t.amount/t.area).toFixed(1)}</td></tr>`).join("");
+
+  /* 면적대별 ㎡당가 */
+  const byA=[...comps].sort((a,b)=>a.area-b.area);
+  if(byA.length>=6){
+    const third=Math.floor(byA.length/3);
+    const seg=[["소형",byA.slice(0,third)],["중형",byA.slice(third,third*2)],["대형",byA.slice(third*2)]];
+    $("lAreaBands").innerHTML=seg.map(([n,g])=>{
+      const uMed=median(g.map(t=>t.amount/t.area));
+      const near=area>=g[0].area&&area<=g[g.length-1].area;
+      return `<div class="item" style="${near?'outline:2px solid var(--blue)':''}"><small>${n} (${Math.round(g[0].area).toLocaleString()}~${Math.round(g[g.length-1].area).toLocaleString()}㎡) · ${g.length}건${near?' · ⭐ 내 면적 구간':''}</small><b>${uMed.toFixed(1)}만/㎡</b></div>`;
+    }).join("");
+  }else $("lAreaBands").innerHTML='<div class="item"><small>거래 표본 부족 (6건 미만)</small><b>-</b></div>';
   $("lBars").innerHTML=barsHTML([["📊 상대가치 (Comps)",sVal,45],["📈 모멘텀",sMom,20],["🛡️ 리스크 (변동성)",sRisk,15],["🔁 유동성",sLiq,20]]);
 
   let cm=`대상의 ㎡당 호가 ${askUnit.toFixed(1)}만원은 유사 거래(${tierDesc}, ${comps.length}건) 중앙값 ${fairUnit.toFixed(1)}만원 대비 ${(premium>=0?"+":"")+pct(premium)} 수준으로, 지역 분포에서 ${(pctile*100).toFixed(0)} 백분위에 위치합니다. `;

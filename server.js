@@ -504,7 +504,7 @@ const server = http.createServer(async (req, res) => {
         const r = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + OPENAI_KEY },
-          body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.4, max_tokens: 700,
+          body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.4, max_tokens: 900,
             messages: [{ role: "system", content: sys }, { role: "user", content: user }] }),
         });
         const j = await r.json();
