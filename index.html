@@ -265,15 +265,19 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 <section class="hero grid-bg no-print">
   <div class="hero-grid">
     <div>
-      <span class="eyebrow">✨ AI 기반 부동산 분석 플랫폼</span>
-      <h1>주소 하나로<br><em>부동산의 모든 것</em>을<br>분석합니다.</h1>
-      <p class="sub">AI가 국토교통부 실거래 데이터를 기반으로 아파트·토지의 적정 가격, 잠재 가치, 리스크, 예상 수익률을 종합 분석합니다.</p>
+      <span class="eyebrow">✨ 국토교통부 실거래가 기반 분석</span>
+      <h1>이 아파트,<br><em>지금 가격</em>에<br>사도 될까?</h1>
+      <p class="sub">단지와 전용면적을 선택하면 최근 실거래·전세가율·적정가·3년 시나리오 수익률을 한 번에 확인할 수 있습니다.</p>
       <div class="hero-search">
         <div class="addr-wrap">
           <input id="bigAddr" placeholder="아파트명 또는 주소를 입력하세요" autocomplete="off"
             oninput="addrInput()" onkeydown="if(event.key==='Enter')loadData()">
-          <button class="btn btn-y" id="loadBtn" onclick="loadData()">분석 →</button>
+          <button class="btn btn-y" id="loadBtn" onclick="loadData()">무료로 1건 분석하기</button>
           <div class="addr-suggest" id="addrSuggest"></div>
+        </div>
+        <div class="mt no-print" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-g" onclick="previewReport(state.mode)">📄 실제 리포트 미리보기</button>
+          <span class="hint" style="margin:0">국토교통부 실거래가 기준 · 분석 기준일 리포트에 표기 · 투자 참고용</span>
         </div>
         <div class="hint" id="searchHint">아파트명을 입력하면 자동완성 목록에서 단지를 선택할 수 있습니다.
           <span class="adv-toggle" onclick="document.getElementById('advRow').style.display=document.getElementById('advRow').style.display==='flex'?'none':'flex'">⚙️ 상세 설정</span></div>
@@ -298,17 +302,17 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
           </div>
         </div>
       </div>
-      <div class="float-card float-yield">예상 수익률<b>+18.5%</b></div>
-      <div class="float-card float-done">AI 분석 완료<small>3초 만에 리포트 생성</small></div>
+      <div class="float-card float-yield">3년 시나리오 예시<b>+18.5%</b></div>
+      <div class="float-card float-done">자동 리포트 생성<small>실거래 데이터 기반</small></div>
     </div>
   </div>
 </section>
 
 <!-- 파란 샘플 밴드 -->
 <div class="band no-print">
-  <button class="bnd-btn" onclick="sampleReport('apt')">🏢 아파트 샘플 — 래미안 원베일리</button>
-  <button class="bnd-btn" onclick="sampleReport('land')">🌍 토지 샘플 — 청와대로 1</button>
-  <button class="bnd-btn" onclick="sampleReport('biz')">🏪 상권 샘플 — AK플라자 홍대</button>
+  <button class="bnd-btn" onclick="previewReport('apt')">🏢 아파트 리포트 미리보기</button>
+  <button class="bnd-btn" onclick="previewReport('land')">🌍 토지 리포트 미리보기</button>
+  <button class="bnd-btn" onclick="previewReport('biz')">🏪 상권 리포트 미리보기</button>
 </div>
 
 <div class="wrap">
@@ -514,37 +518,26 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
   </div>
 </div>
 
-<!-- ===== 마케팅 섹션 (Land AI 스타일) ===== -->
+<!-- ===== 마케팅 섹션 ===== -->
 <section class="sec-mkt alt no-print">
   <div class="sec-head">
-    <div class="kicker">CUSTOMER STORIES</div>
-    <h2>고객 후기</h2>
-    <p>부동산 투자자와 실무자들이 직접 경험한 명당연구소의 가치를 들어보세요.</p>
+    <div class="kicker">DATA &amp; METHOD</div>
+    <h2>모든 수치에는 출처가 있습니다</h2>
+    <p>과장 없이, 공개 데이터에서 계산한 값만 보여드립니다. 리포트마다 분석 기준일과 표본 수를 표기합니다.</p>
   </div>
-  <div class="g3">
-    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
-      <p>"매수 검토 전 사전 스크리닝 용도로 활용하고 있습니다. 실거래 대비 호가 프리미엄과 전세가율 분석이 특히 유용하며, 검토 시간을 기존 대비 크게 단축할 수 있었습니다."</p>
-      <div class="who"><span class="avatar" style="background:#FACC15">K</span><span><b>김OO</b><small>개인 투자자 · 갭투자 5년차</small></span></div></div>
-    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
-      <p>"고객 상담 시 현장에서 바로 리포트를 뽑아 보여주면 신뢰도가 크게 올라갑니다. 실거래 차트와 시나리오 수익률, PDF 저장 기능이 실무에서 매우 유용합니다."</p>
-      <div class="who"><span class="avatar" style="background:#2563EB">L</span><span><b>이OO</b><small>공인중개사 · 일산 서구</small></span></div></div>
-    <div class="review"><div class="q">“</div><div class="stars">★★★★★</div>
-      <p>"토지 ㎡당가 백분위와 유사 거래 비교 기능이 인상적입니다. 지분거래를 걸러주고 환금성 위험까지 짚어줘서 토지 입문자에게 특히 도움이 됩니다."</p>
-      <div class="who"><span class="avatar" style="background:#10B981">P</span><span><b>박OO</b><small>토지 투자자 · 경기 북부</small></span></div></div>
-  </div>
-  <div class="stats4">
-    <div><b>3초</b><small>평균 분석 시간</small></div>
-    <div><b>18K+</b><small>전국 분석 가능 단지</small></div>
-    <div><b>5가지</b><small>월스트리트 분석 기법</small></div>
-    <div><b>100%</b><small>국토부 실거래 데이터</small></div>
+  <div class="stats4" style="margin-top:10px">
+    <div><b>국토교통부</b><small>실거래가 공개시스템 기반</small></div>
+    <div><b>K-apt</b><small>전국 공동주택 단지 색인</small></div>
+    <div><b>기준일 표기</b><small>모든 리포트에 분석 일시 명시</small></div>
+    <div><b>참고용</b><small>투자 권유가 아닌 분석 자료</small></div>
   </div>
 </section>
 
 <section class="sec-mkt no-print">
   <div class="sec-head">
     <div class="kicker">FEATURES</div>
-    <h2>국내 유일의 AI 실거래 분석 플랫폼</h2>
-    <p>최단시간, 실거래 데이터 정밀도, 그리고 PDF 리포트 제공까지</p>
+    <h2>실거래 데이터로 검증하는 분석 프로세스</h2>
+    <p>모든 지표는 국토교통부 공개 데이터에서 직접 계산되며, 계산 기준을 리포트에 함께 표기합니다.</p>
   </div>
   <div class="g3">
     <div class="featc"><span class="ic">📊</span><b>상대가치 평가 (Comps)</b><p>동일 단지·유사 면적의 최근 실거래 중앙값으로 적정가를 산출하고 호가 프리미엄을 판정합니다.</p></div>
@@ -578,7 +571,7 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
       <button class="btn btn-g" onclick="openPay('P100','pricing')">100건 구매</button></div>
     <div class="price"><div class="nm">무제한 · 기업</div><div class="amt" style="font-size:24px">별도 협의</div><div class="de">법인·프롭테크·대량 분석</div>
       <ul><li>무제한 분석</li><li>API 연동 협의</li><li>맞춤 리포트·전담 지원</li></ul>
-      <button class="btn btn-g" onclick="openLead('무제한·기업','pricing')">문의하기</button></div>
+      <button class="btn btn-g" onclick="openLead('무제한·기업','contact')">문의하기</button></div>
   </div>
   <style>@media(max-width:1000px){#priceGrid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:600px){#priceGrid{grid-template-columns:1fr!important}}</style>
 </section>
@@ -606,7 +599,7 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
 <footer class="no-print">
   🏢 명당연구소 — AI 부동산 투자 분석 플랫폼 (베타)<br>
   본 서비스의 분석 결과는 참고용이며 투자 권유가 아닙니다. 투자 판단의 책임은 투자자 본인에게 있습니다.<br>
-  <a onclick="openLegal()">이용약관 · 개인정보처리방침</a>
+  <a href="/legal">이용약관 · 개인정보처리방침 · 환불 기준</a> · 문의 play@muzig.ai
 </footer>
 
 <!-- 사전등록 모달 -->
@@ -619,7 +612,7 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
     <div class="hint" id="leadMsg" style="min-height:18px"></div>
     <button class="btn btn-p" onclick="submitLead()">무료로 등록하기</button>
     <button class="btn btn-g" onclick="closeModal('leadModal')">다음에 할게요</button>
-    <p class="hint" style="margin-top:10px;margin-bottom:0">등록 시 개인정보처리방침에 동의하는 것으로 간주합니다. 이메일은 서비스 안내 외 용도로 사용하지 않습니다.</p>
+    <p class="hint" style="margin-top:10px;margin-bottom:0">등록 시 <a href="/legal" target="_blank" style="color:var(--blue)">개인정보처리방침</a>에 동의하는 것으로 간주합니다. 이메일은 서비스 안내 외 용도로 사용하지 않습니다.</p>
   </div>
 </div>
 
@@ -630,7 +623,8 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
     <p>필요한 만큼만 구매하거나, 친구를 초대해 무료로 받을 수 있어요. (매월 무료 1건 자동 제공)</p>
     <div id="payPacks"></div>
     <div id="refBox" class="hint" style="margin-top:14px;background:var(--light);border-radius:10px;padding:12px 14px;line-height:1.7"></div>
-    <button class="btn btn-g" style="margin-top:10px" onclick="closeModal('payModal');openLead('무제한·기업','paywall')">🏢 무제한·기업 문의</button>
+    <button class="btn btn-g" style="margin-top:10px" onclick="closeModal('payModal');openLead('무제한·기업','contact')">🏢 무제한·기업 문의</button>
+    <p class="hint" style="margin-top:10px;margin-bottom:0">이용권 유효기간 12개월 · <a href="/legal" target="_blank" style="color:var(--blue)">환불 기준·이용약관 보기</a></p>
     <button class="btn btn-g" onclick="closeModal('payModal')">닫기</button>
   </div>
 </div>
@@ -645,7 +639,13 @@ footer a{color:#94A3B8;text-decoration:underline;cursor:pointer}
       <b>데이터 출처</b>
       국토교통부 실거래가 공개시스템, K-apt 공동주택관리정보시스템, OpenStreetMap 등 공개 데이터를 사용합니다.
       <b>개인정보 수집</b>
-      사전등록 시 이메일·이름(선택)을 수집하며, 서비스 출시 안내 목적으로만 사용합니다. 삭제 요청 시 즉시 파기합니다.
+      등록 시 이메일·이름(선택)을 수집하며, 서비스 안내 목적으로만 사용합니다. 삭제 요청 시 즉시 파기합니다.
+      <b>이용권 유효기간</b>
+      구매한 이용권은 결제일로부터 12개월간 사용할 수 있습니다.
+      <b>환불 기준</b>
+      미사용 이용권은 결제일로부터 7일 이내 전액 환불됩니다. 일부 사용 시 사용분(팩 단가 기준)을 제외하고 환불됩니다. 환불 요청: play@muzig.ai
+      <b>사업자 정보</b>
+      본 서비스는 베타 운영 중이며, 정식 결제 오픈 시 사업자 정보(상호·대표자·사업자등록번호·통신판매업 신고번호)가 이 페이지에 게시됩니다.
       <b>문의</b>
       play@muzig.ai
     </div>
@@ -859,17 +859,35 @@ async function initShare(){
 }
 
 /* ================= 수익화: 사전등록 · 지표 · 무료 한도 ================= */
-function track(ev){try{fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ev})});}catch{}}
+function track(ev){
+  try{fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ev})});}catch{}
+  try{if(window.gtag)gtag("event",ev);}catch{} // GA4 병행 (GA_ID 설정 시)
+}
+function loadGA(id){
+  if(!id||window.gtag)return;
+  const s=document.createElement("script");s.async=true;s.src="https://www.googletagmanager.com/gtag/js?id="+id;
+  document.head.appendChild(s);
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=function(){dataLayer.push(arguments);};
+  gtag("js",new Date());gtag("config",id);
+}
 let leadCtx={plan:"",source:""};
 function openLead(plan,source){
   leadCtx={plan:plan||"",source:source||""};
-  $("leadTitle").textContent=source==="buy"?"💳 구매 전 이메일 등록":source==="claim"?"🎫 이용권 지급용 이메일 등록":"🎁 무료 이용권 받기";
-  $("leadDesc").innerHTML=source==="buy"
-    ?"결제한 이용권을 지급·복원하려면 이메일이 필요합니다. 등록하면 <b>무료 3건</b>도 함께 드려요."
+  $("leadTitle").textContent=
+    source==="buy"?"💳 구매 전 이메일 등록"
+    :source==="claim"?"🎫 이용권 지급용 이메일 등록"
+    :source==="waitlist"?"💳 결제 오픈 대기 등록"
+    :source==="contact"?"🏢 기업·무제한 문의"
+    :"🎁 무료 이용권 받기";
+  $("leadDesc").innerHTML=
+    source==="buy"?"결제한 이용권을 지급·복원하려면 이메일이 필요합니다. 등록하면 <b>무료 3건</b>도 함께 드려요."
+    :source==="waitlist"?`카드 결제가 곧 오픈됩니다. 지금 등록하면 <b>오픈 즉시 1순위 안내 + 얼리버드 할인</b>과 <b>무료 이용권 3건</b>을 드립니다.${plan?` (${plan})`:""}`
+    :source==="contact"?"이메일을 남겨주시면 <b>24시간 내</b> 회신드립니다. 이름 칸에 회사명·용도를 함께 적어주시면 더 빠르게 안내해드릴 수 있어요."
     :`이메일만 남기면 <b>무료 이용권 3건</b> + <b>내 추천 링크</b>(친구 1명 등록 시 1건 추가)를 드립니다.${plan?` (${plan})`:""}`;
   $("leadMsg").textContent="";
   $("leadModal").style.display="flex";
-  track("leadopen");
+  track(source==="contact"?"contactopen":source==="waitlist"?"waitlistopen":"leadopen");
 }
 function closeModal(id){$(id).style.display="none";}
 function openLegal(){$("legalModal").style.display="flex";}
@@ -904,7 +922,7 @@ async function initPay(){
 function openPay(pack,source){
   const email=localStorage.getItem("mdEmail");
   if(!email){pendingPack=pack;openLead("이용권 구매",source||"buy");return;} // 이용권 지급용 이메일 먼저
-  if(!tossClientKey||typeof TossPayments==="undefined"){openLead("이용권 구매(결제 준비중)",source||"pricing");return;}
+  if(!tossClientKey||typeof TossPayments==="undefined"){openLead((tossPacks[pack]?tossPacks[pack].label+" 이용권":pack),"waitlist");return;}
   track("paystart");
   const p=tossPacks[pack];
   const orderId=`${pack}_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
@@ -935,6 +953,7 @@ function handlePayResult(){
 /* ===== 사용 한도: 무료 월 5건 → 이후 이용권(크레딧) 차감 ===== */
 function quotaKey(){const d=new Date();return`mdUse-${d.getFullYear()}-${d.getMonth()+1}`;}
 async function checkQuota(){
+  if(state.sampleMode)return true; // 샘플 미리보기는 무과금
   if(location.pathname.startsWith("/share/"))return true; // 공유 열람은 무제한
   const k=quotaKey(),used=+localStorage.getItem(k)||0;
   if(used<1){localStorage.setItem(k,used+1);return true;} // 매월 무료 1건
@@ -966,6 +985,7 @@ function initRoute(){
   const ref=new URLSearchParams(location.search).get("ref");
   if(ref)localStorage.setItem("mdRef",ref.toUpperCase()); // 추천 링크 유입 기록
   const p=location.pathname;
+  if(p==="/legal"){setTimeout(openLegal,400);} // 법적 고지 전용 경로
   if(p==="/pricing"){ // 결제 페이지: 요금제 섹션으로 스크롤 + 소진 안내
     setTimeout(()=>{
       if(new URLSearchParams(location.search).get("from")==="quota"&&$("payNotice"))$("payNotice").style.display="block";
@@ -979,7 +999,7 @@ function initRoute(){
   const s=new URLSearchParams(location.search);
   if(s.get("mode"))setMode(s.get("mode"));
   if(s.get("months"))$("months").value=s.get("months");
-  if(s.get("sample")){sampleReport(s.get("sample"));return;}
+  if(s.get("sample")){previewReport(s.get("sample"));return;}
   if(s.get("lawd"))$("lawdManual").value=s.get("lawd");
   if(s.get("code"))state.selRegion={code:s.get("code"),full:s.get("region")||""};
   state.aptQuery=s.get("aq")||"";
@@ -993,6 +1013,7 @@ async function checkServer(){
   const b=$("keyBadge");
   try{
     const r=await fetch("/api/status");const j=await r.json();
+    if(j.gaId)loadGA(j.gaId); // GA4 측정 (설정 시)
     if(j.keyConfigured){b.textContent="🔐 실거래가 API 연결됨";b.style.background="#ECFDF5";b.style.color="#047857";}
     else{b.textContent="⚠️ 서버 API 키 미설정 (데모만 가능)";b.style.background="#FFFBEB";b.style.color="#B45309";
       setStatus("err","서버에 API 키가 없습니다. 서버 폴더의 config.json에 인증키를 입력한 뒤 페이지를 새로고침하세요. 데모 데이터 체험은 가능합니다.");}
@@ -1000,6 +1021,7 @@ async function checkServer(){
 }
 async function loadData(){
   $("addrSuggest").style.display="none";
+  state.sampleMode=false; // 실제 분석은 과금 대상
   // 랜딩 페이지에서는 분석 전용 페이지(/analyze)로 이동
   if(!state.isTool){
     const s=new URLSearchParams();
@@ -1159,7 +1181,15 @@ function loadDemo(){
   setTimeout(()=>$(state.mode==="apt"?"aptPicker":"landPicker").scrollIntoView({behavior:"smooth"}),300);
 }
 
-/* ================= 샘플 리포트 (실거래 데이터 · 고정 대상) ================= */
+/* ================= 리포트 미리보기 (정적 샘플 · 즉시 · 이용권 미소모) ================= */
+function previewReport(kind){
+  if(!state.isTool){location.href="/analyze?sample="+kind;return;}
+  state.sampleMode=true; // 샘플은 이용권을 소모하지 않음
+  track("preview");
+  demoReport(kind);
+}
+
+/* ================= (구) 실데이터 샘플 — 미사용 ================= */
 async function sampleReport(kind){
   if(!state.isTool){location.href="/analyze?sample="+kind;return;} // 랜딩 → 분석 페이지
   setMode(kind);

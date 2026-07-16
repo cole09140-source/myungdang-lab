@@ -344,7 +344,7 @@ const server = http.createServer(async (req, res) => {
   };
 
   try {
-    if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname === "/analyze" || u.pathname === "/pricing" || u.pathname.startsWith("/share/")) {
+    if (u.pathname === "/" || u.pathname === "/index.html" || u.pathname === "/analyze" || u.pathname === "/pricing" || u.pathname === "/legal" || u.pathname.startsWith("/share/")) {
       const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf-8");
       return send(200, html, "text/html");
     }
@@ -478,7 +478,8 @@ const server = http.createServer(async (req, res) => {
       SERVICE_KEY = SERVICE_KEY || loadServiceKey(); // config.json 수정 후 새로고침만으로 반영
       KAKAO_KEY = KAKAO_KEY || loadKakaoKey();
       OPENAI_KEY = OPENAI_KEY || loadOpenaiKey();
-      return send(200, { keyConfigured: !!SERVICE_KEY, kakaoConfigured: !!KAKAO_KEY, openaiConfigured: !!OPENAI_KEY });
+      return send(200, { keyConfigured: !!SERVICE_KEY, kakaoConfigured: !!KAKAO_KEY, openaiConfigured: !!OPENAI_KEY,
+        gaId: (process.env.GA_ID || readConfig().gaId || "").trim() || null });
     }
 
     /* OpenAI 애널리스트 코멘트 생성 (키는 서버에만 존재) */
